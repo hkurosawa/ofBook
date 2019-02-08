@@ -29,20 +29,49 @@ If you are following along using ofSketch, great! There are a couple things to n
 
 もし ofSketch を使って進めようとしているなら、よろしい！いくつか注意点があります。ofSketch でコーディングするのは他の Xcode や Code::Blocks 等でコーディングするのとは少し異なります。1）ヘッダファイル（`.h`）と呼ばれるものに変数を追加する箇所が何箇所かあります。この指示を見たら、ofSketch では`setup()`関数の上に変数を追加することを意味します。2）`setup()`の中で`ofSetWindowShape(int width, int height)` を使ってアプリケーションのサイズを制御したくなるでしょう。3）いくつかのアプリケーションではコンピュータに画像を保存します。これらは ofSketch のフォルダの中の`ofSketch/data/Projects/YOUR_PROJECT_NAME/bin/data/`を探すことで見つかります。
 
+<!--
 ## Brushes with Basic Shapes
+-->
 
+## 基本形状のブラシ
+
+<!--
 To create brushes, we need to define some basic building blocks of graphics. We can classify the 2D graphics functions into two categories: basic shapes and freeform shapes. Basic shapes are rectangles, circles, triangles and straight lines. Freeform shapes are polygons and paths. In this section, we will focus on the basic shapes.
+-->
 
+ブラシを作成するには、グラフィックスの基本的な構成要素を定義する必要があります。2D グラフィックス機能は 2 つのカテゴリに分類できます。それは、基本形状と自由形状です。基本形状は四角、円、三角形や直線です。自由形状はポリゴンやパスです。このセクションでは基本形状にフォーカスします。
+
+<!--
 ### Basic Shapes
+-->
 
+### 基本形状
+
+<!--
 Before drawing any shape, we need to know how to specify locations on screen. Computer graphics use the [Cartesian coordinate system](https://en.wikipedia.org/wiki/Cartesian_coordinate_system). Remember figure 1 (left) from math class? A pair of values `(x, y)` told us how far away we were from `(0, 0)`, the origin. Computer graphics are based on this same system, but with two twists. First, `(0, 0)` is the upper leftmost pixel of the screen. Second, the y axis is flipped such that the positive y direction is located below the origin figure 1 (center).
+-->
 
+何か形を描く前に、画面上の位置の指定方法を知っておきましょう。コンピュータグラフィックスは[デカルト座標系](https://ja.wikipedia.org/wiki/%E7%9B%B4%E4%BA%A4%E5%BA%A7%E6%A8%99%E7%B3%BB)を使っています。数学の授業での図 1 (左) を覚えていますか？`(x, y)`の値のペアがどれだけ`(0, 0)`つまり原点から離れているかを示しています。コンピュータグラフィックスはこの同じシステムを基礎としていますが、2 つの癖があります。一つ目は、`(0, 0)`が画面上左上隅のピクセルです。二つ目、y 軸が反転しているので、y の正の方向は図 1（中央）の原点からは下方向です。
+
+<!--
 If we apply this to the top left of my screen figure 1 (right), which happens to be my browser. We can see the pixels and identify their locations in our new coordinate system. The top left pixel is `(0, 0)`. The top left pixel of the blue calender icon (with the white "19") is `(58, 5)`.
+-->
 
+これを私のスクリーン、たまたまブラウザですが図 1（右）の左上に適用するとします。ピクセルを見ることができ、それらの位置を新しい座標系で特定することができます。左上のピクセルが`(0, 0)`です。青いカレンダーアイコン（白い"19"の数字が付いている）の左上のピクセルは`(58, 5)`です。
+
+<!--
 ![Figure 1: 2D screen coordinates](images/Figure1_CoordSystemFigure.png)
+-->
 
+![図1: 2Dスクリーン座標系](images/Figure1_CoordSystemFigure.png)
+
+<!--
 Now that we can talk about locations, let's jump into code. Create an openFrameworks project and call it "BasicShapes" (or something more imaginative). Open the source file, `ofApp.cpp`, and navigate to the `draw()` function. Add the following:
+-->
 
+これで私たちは位置について語ることができますので、コードを見ていきましょう。openFrameworks のプロジェクトを作成して"BasicShapes"（またはもっと創造的なもの）と名付けます。`ofApp.cpp` のソースファイルを開き、`draw()`関数まで移動しましょう。以下を追加してください。
+
+<!--
 ```cpp
 ofBackground(0);  // Clear the screen with a black color
 ofSetColor(255);  // Set the drawing color to white
@@ -54,11 +83,33 @@ ofDrawEllipse(400, 100, 80, 100); // Centered at (400 100), 80 wide x 100 high
 ofDrawTriangle(500, 150, 550, 50, 600, 150); // Three corners: (500, 150), (550, 50), (600, 150)
 ofDrawLine(700, 50, 700, 150); // Line from (700, 50) to (700, 150)
 ```
+-->
 
+```cpp
+ofBackground(0);  // 黒で画面をクリアします
+ofSetColor(255);  // 描画色を白に設定します
+
+// 図形の描画
+ofDrawRectangle(50, 50, 100, 100); // 左上が (50, 50), 幅100 x 高さ100
+ofDrawCircle(250, 100, 50); // 中心点 (250, 100), 半径 50
+ofDrawEllipse(400, 100, 80, 100); // 中心点 (400 100), 幅80 x 高さ100
+ofDrawTriangle(500, 150, 550, 50, 600, 150); // 3つの角: (500, 150), (550, 50), (600, 150)
+ofDrawLine(700, 50, 700, 150); // (700, 50) から (700, 150) までの直線
+```
+
+<!--
 When we run the code, we see white shapes on a black background. Success! Each time our `draw()` function executes, three things happen. First, we clear the screen by drawing a solid black background using [`ofBackground(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofBackground). The `0` represents a grayscale color where `0` is completely black and `255` is completely white. Second, we specify what color should be used for drawing with [`ofSetColor(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofSetColor). We can think of this code as telling openFrameworks to pull out a specific colored marker. When we draw, we will draw in that color until we specify that we want another color. Third, we draw our basic shapes with [`ofDrawRectangle(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawRectangle), [`ofDrawCircle(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawCircle), [`ofDrawEllipse(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawEllipse), [`ofDrawTriangle(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawTriangle) and [`ofDrawLine(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawLine). Check out the comments in the example to better understand how we are using the drawing functions. The functions can be used in other ways as well, so check out the openFrameworks documentation if you are curious.
+-->
 
+コードを実行すると、黒色の背景に白い図形が現れます。成功です！`draw()`関数が実行される度に 3 つの事柄が起こります。まず、[`ofBackground(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofBackground)によって黒の単色で画面を消去します。`0`はグレースケールで、`0`は真っ黒、`255`は真っ白を表します。2 番目に、[`ofSetColor(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofSetColor)で描画時に何色を使うかを指定します。このコードは openFrameworks に特定のカラーマーカーを取り出させるものと考えることができます。描画の際には、他の色にしたいと指定するまではこの色で描画されます。3 番目に、[`ofDrawRectangle(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawRectangle), [`ofDrawCircle(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawCircle), [`ofDrawEllipse(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawEllipse), [`ofDrawTriangle(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawTriangle) and [`ofDrawLine(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawLine)で基本形状を描画します。描画の関数をどのように利用しているかをより詳しく知るには、サンプルのコメントを確認してください。これらの関数は別の使い方もできますので、興味があれば openFrameworks のドキュメントにも当たってください。
+
+<!--
 [`ofFill()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofFill) and [`ofNoFill()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofFill) toggle between drawing filled shapes and drawing outlines. The colored marker analogy doesn't fit, but the concept still applies. `ofFill()` tells openFrameworks to draw filled shapes until told otherwise. `ofNoFill()` does the same but with outlines. So we can draw two rows of shapes on our screen (figure 2) - one filled and one outlines - if we modify our `draw()` function to look like:
+-->
 
+[`ofFill()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofFill) と [`ofNoFill()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofFill) は塗りつぶしの形状と輪郭の描画を切り替えます。カラーマーカーの例えはうまく当てはまりませんが、それでも概念は使えます。`ofFill`は openFrameworks に対して、別のものを命令するまで塗りつぶしの形状を描画するように伝えます。`ofNoFill()`は輪郭に対して同様のことを行います。したがって私たちは、`draw()`関数を下記のように変更すれば、2 行に渡る形状、一つは塗りつぶしでもう一つは輪郭線を、画面上（図 2）に描画します。
+
+<!--
 ```cpp
 ofFill(); // If we omit this and leave ofNoFill(), all the shapes will be outlines!
 // Draw some shapes (code omitted)
@@ -66,22 +117,59 @@ ofFill(); // If we omit this and leave ofNoFill(), all the shapes will be outlin
 ofNoFill(); // If we omit this and leave ofFill(), all the shapes will be filled!
 // Draw some shapes (code omitted)
 ```
+-->
 
+```cpp
+ofFill(); // これを消してofNoFill()を残せば、全ての形状が輪郭線になります！
+// 図形を描画する (コードは省略)
+
+ofNoFill(); // これを消してofFill()を残せば、全ての形状が塗りつぶしになります！
+// 図形を描画する (コードは省略)
+```
+
+<!--
 The circle and ellipse are looking a bit jagged, so we can fix that with [`ofSetCircleResolution(...)`](http://openframeworks.cc/documentation/gl/ofGLProgrammableRenderer.html#!show_setCircleResolution). Circles and ellipses are drawn by connecting a series of points with straight lines. If we take a close look at the circle in figure 2, and we'll be able to identify the 20 tiny straight lines. That's the default resolution. Try putting `ofSetCircleResolution(50)` in the `setup()` function.
+-->
 
+円および楕円形がいささかギザギザに見えるので、[`ofSetCircleResolution(...)`](http://openframeworks.cc/documentation/gl/ofGLProgrammableRenderer.html#!show_setCircleResolution)でこれを修正しましょう。円や楕円は点の連なりを直線で繋げることによって描画しています。図 2 の円を良く見てみると、20 個の小さな直線を見つけることができます。これがデフォルトの解像度です。`setup()`関数の中に`ofSetCircleResolution(50)`を書いてみてください。
+
+<!--
 The individual lines that make up our outlines can be jagged too. We can fix that with a smoothing technique called [anti-aliasing](https://en.wikipedia.org/wiki/Spatial_anti-aliasing). We probably don't need to worry about this since anti-aliasing will be turned on by default in recent versions of openFrameworks. If it isn't, just add [`ofEnableAntiAliasing()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofEnableAntiAliasing) to `setup()`. (For future reference, you can turn it off to save computing power: [`ofDisableAntiAliasing()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofDisableAntiAliasing).)
+-->
 
+輪郭を形成している個々の直線もギザついているかもしれません。これは[アンチエイリアシング](https://en.wikipedia.org/wiki/Spatial_anti-aliasing)というスムージングのテクニックで修正できます。アンチエイリアシングは openFrameworks の最近のバージョンではデフォルトで有効になっているので恐らくこれを心配する必要はありません。もしそうでなければ、単に`setup()`に[`ofEnableAntiAliasing()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofEnableAntiAliasing)を追加してください。 (今後のために、計算パワーの節約のために無効化もできます: [`ofDisableAntiAliasing()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofDisableAntiAliasing)）
+
+<!--
 ![Figure 2: Basic shapes with and without a fill](images/Figure2_BasicShapes.png)
+-->
 
+![図2: 塗りつぶし有りと無しの基本形状](images/Figure2_BasicShapes.png)
+
+<!--
 \[[Source code for this section](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/1_i_Basic_Shapes)\]
 
 \[[ofSketch file for this section](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_i_Basic_Shapes.sketch)\]
+-->
 
+\[[このセクションのソースコード](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/1_i_Basic_Shapes)\]
+
+\[[このセクションの ofSketch ファイル](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_i_Basic_Shapes.sketch)\]
+
+<!--
 **Extensions**
+-->
 
+**拡張**
+
+<!--
 1. We can change the thickness of lines using [`ofSetLineWidth(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofSetLineWidth). The default thickness is 1. We use this function like `ofFill()` and `ofSetColor(...)` in that it changes the thickness of the "marker" we use to draw lines. Note: the range of widths supported by this feature is dependent on your graphics card, so if it's not working, it might not be your fault!
 2. Draw some rounded rectangles using [`ofDrawRectRounded(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawRectRounded)\.
 3. Explore the world of curved lines with [`ofDrawCurve(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawCurve) and [`ofDrawBezier(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawBezier). You can control the resolution using [`ofSetCurveResolution(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofSetCurveResolution)\.
+-->
+
+1. 線の太さは[`ofSetLineWidth(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofSetLineWidth)で変更できます。デフォルトの太さは 1 です。1. この関数は`ofFill()`や`ofSetColor(...)`のように線を描画する際の「マーカー」の太さを変更するために利用します。注意：この機能のサポートされる線幅の範囲はグラフィックスカードに依存しますので、もし動作しなくてもたぶんあなたのせいではありませんよ！
+2. [`ofDrawRectRounded(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawRectRounded)で角丸を描画してみましょう。
+3. Explore the world of curved lines with [`ofDrawCurve(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawCurve)や[`ofDrawBezier(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawBezier)で曲線の世界を探索してみましょう。解像度は[`ofSetCurveResolution(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofSetCurveResolution)で調整できます。
 
 ### Brushes from Basic Shapes
 
