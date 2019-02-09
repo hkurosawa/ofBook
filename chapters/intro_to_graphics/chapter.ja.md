@@ -171,22 +171,55 @@ The individual lines that make up our outlines can be jagged too. We can fix tha
 2. [`ofDrawRectRounded(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawRectRounded)で角丸を描画してみましょう。
 3. Explore the world of curved lines with [`ofDrawCurve(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawCurve)や[`ofDrawBezier(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofDrawBezier)で曲線の世界を探索してみましょう。解像度は[`ofSetCurveResolution(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofSetCurveResolution)で調整できます。
 
+<!--
 ### Brushes from Basic Shapes
+-->
 
+### 基本形状からのブラシ
+
+<!--
 We survived the boring bits, but why draw one rectangle, when we can draw a million (figure 3)? That is essentially what we will be doing in this section. We will build brushes that drop a burst of many small shapes whenever we press the left mouse button. To make things more exciting, we will mix in some randomness. Start a new openFrameworks project, called "ShapeBrush."
+-->
 
+退屈な部分はなんとかクリアしましたが、百万もの四角形を描く（図 3）ことが可能なのに、なんで一つだけ描画しているんでしょう？これが本質的にはこのセクションにおいて行っていくことです。左マウスボタンを押下するとたくさんの小さな形状を散らしていくようなブラシを作っていきましょう。もっと面白くするために、いくらかランダム性も取り入れます。新規の openFrameworks プロジェクトを開始して、"ShapeBrush" と名付けましょう。
+
+<!--
 ![Figure 3: Okay, not actually a million rectangles](images/Figure3_LotsOfRectangles.png)
+-->
 
+![図3: オーケー、本当は百万個はないですよ](images/Figure3_LotsOfRectangles.png)
+
+<!--
 #### Single Rectangle Brush: Using the Mouse
+-->
 
+#### 単一の四角形のブラシ：マウスの利用
+
+<!--
 We are going to lay down the foundation for our brushes by making a simple one that draws a single rectangle when we hold down the mouse. To get started, we are going to need to know 1) the mouse location and 2) if the left mouse button is pressed.
+-->
 
+マウスを押下した際に一つの四角形を描画するようなシンプルなものを作成して、ブラシの基礎を作っていきましょう。はじめに、1）マウスの位置、そして 2）左マウスボタンが押されたかどうか、を知る必要があります。
+
+<!--
 For 1), we can use two openFrameworks functions that return `int` variables: [`ofGetMouseX()`](http://openframeworks.cc/documentation/events/ofEvents.html#show_ofGetMouseX) and [`ofGetMouseY()`](http://openframeworks.cc/documentation/events/ofEvents.html#show_ofGetMouseY). We will use them in `draw()`.
+-->
 
+1）については、[`ofGetMouseX()`](http://openframeworks.cc/documentation/events/ofEvents.html#show_ofGetMouseX) と [`ofGetMouseY()`](http://openframeworks.cc/documentation/events/ofEvents.html#show_ofGetMouseY) という`int`h 連数を返す 2 つの openFrameworks の関数が使えます。これらは`draw()`の中で使いましょう。
+
+<!--
 For 2), we can find out whether the left mouse button is pressed using [`ofGetMousePressed(...)`](http://openframeworks.cc/documentation/events/ofEvents.html#show_ofGetMousePressedd). The function asks us to pass in an `int` that represents which mouse button is we want to know about. openFrameworks provides some "public constants" for use here: `OF_MOUSE_BUTTON_LEFT`, `OF_MOUSE_BUTTON_MIDDLE` and `OF_MOUSE_BUTTON_RIGHT`. These public constants are just `int` variables that cannot be changed and can be accessed anywhere you have included openFrameworks. So `ofGetMousePressed(OF_MOUSE_BUTTON_LEFT)` will return `true` if the left button is pressed and will return `false` otherwise.
+-->
 
+2）については、[`ofGetMousePressed(...)`](http://openframeworks.cc/documentation/events/ofEvents.html#show_ofGetMousePressedd)を使って左マウスボタンが押されたかどうかを知ることができます。この関数には、私たちが知りたいのはどのマウスボタンが押されたかを示す`int`を渡す必要があります。openFrameworks はここで利用できるいくつかの「パブリック定数」、`OF_MOUSE_BUTTON_LEFT`、`OF_MOUSE_BUTTON_MIDDLE`そして`OF_MOUSE_BUTTON_RIGHT`といったものを提供しています。これらのパブリック定数は変更が不可能かつ openFrameworks を組み込んでいればどこからでもアクセスが可能な、単なる`int`の変数です。したがって、`ofGetMousePressed(OF_MOUSE_BUTTON_LEFT)`は左マウスボタンが押下されていれば`true`を返しますし、そうでなければ`false`を返却します。
+
+<!--
 Let's add some graphics. Hop over to the `draw()` function where we can bring these new functions together:
+-->
 
+グラフィックスを追加してみましょう。`draw()`関数に行って、これらの新しい関数を組み合わせてみましょう。
+
+<!--
 ```cpp
 if (ofGetMousePressed(OF_MOUSE_BUTTON_LEFT)) {  // If the left mouse button is pressed...
     ofSetColor(255);
@@ -194,11 +227,29 @@ if (ofGetMousePressed(OF_MOUSE_BUTTON_LEFT)) {  // If the left mouse button is p
     ofDrawRectangle(ofGetMouseX(), ofGetMouseY(), 50, 50);  // Draw a 50 x 50 rect centered over the mouse
 }
 ```
+-->
 
+```cpp
+if (ofGetMousePressed(OF_MOUSE_BUTTON_LEFT)) {  // 左マウスボタンが押されたら…
+    ofSetColor(255);
+    ofSetRectMode(OF_RECTMODE_CENTER);
+    ofDrawRectangle(ofGetMouseX(), ofGetMouseY(), 50, 50);  // マウスを中心に50 x 50の四角形を描画
+}
+```
+
+<!--
 [`ofSetRectMode(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofSetRectMode) allows us to control how the `(x, y)` we pass into `ofDrawRectangle(...)` are used to draw. By default, they are interpreted as the upper left corner (`OF_RECTMODE_CORNER`). For our purposes, we want them to be the center (`OF_RECTMODE_CENTER`), so our rectangle is centered over the mouse.
+-->
 
+[`ofSetRectMode(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofSetRectMode) で私たちが`ofDrawRectanble(...)`に渡した `(x, y)` を描画にどのように利用するかを制御できます。デフォルトでは、これらは左上隅（`OF_RECTMODE_CORNER`）と解釈されます。私たちの目的としては、四角形はマウスが中央に来るようにしたいのでこれは中心点（`OF_RECTMODE_CENTER`）であってほしいです。
+
+<!--
 Compile and run. A white rectangle is drawn at the mouse position when we press the left mouse button ... but it disappears immediately. By default, the screen is cleared with every `draw()` call. We can change that with [`ofSetBackgroundAuto(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofSetBackgroundAuto). Passing in a value of `false` turns off the automatic background clearing. Add the following lines into `setup()`:
+-->
 
+コンパイルと実行をしましょう。左マウスボタンを押下するとマウスの一に白い四角形が描画されますね…しかしすぐに消えてしまいます。デフォルトでは、画面は毎回`draw()`の度にクリアされてしまいます。これは[`ofSetBackgroundAuto(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofSetBackgroundAuto)で変更ができます。`false`を値として渡すと自動的に背景がクリアされることをオフにできます。`setup()`に以下の行を追加しましょう。
+
+<!--
 ```cpp
 ofSetBackgroundAuto(false);
 
@@ -206,34 +257,89 @@ ofSetBackgroundAuto(false);
 // the background before we do anything with the brush
 ofBackground(0);
 ```
+-->
 
+```cpp
+ofSetBackgroundAuto(false);
+
+// 黒い背景の上には描画したいので、
+// ブラシで何かを行う前に背景を描画する必要はあります。
+ofBackground(0);
+```
+
+<!--
 First brush, done! We are going to make this a bit more interesting by adding 1) randomness and 2) repetition.
+-->
 
+最初のブラシは、完成です！これから 1）ランダム性と 2）繰り返しを追加することでもっと興味深いものにしていきましょう。
+
+<!--
 Randomness can make our code dark, mysterious and unpredictable. Meet [`ofRandom(...)`](http://openframeworks.cc/documentation/math/ofMath.html#!show_ofRandom). It can be used in two different ways: by passing in two values `ofRandom(float min, float max)` or by passing in a single value `ofRandom(float max)` where the min is assumed to be `0`. The function returns a random value between the min and max. We can inject some randomness into our rectangle color (figure 4) by using:
+-->
 
+ランダム性は私たちのコードを暗く、ミステリアスで予測不能にします。[`ofRandom(...)`](http://openframeworks.cc/documentation/math/ofMath.html#!show_ofRandom)を見てみましょう。これは 2 種類の方法で利用でき、`ofRandom(float min, float max)` または一つの値を `ofRandom(float max)` のように渡して、これは min が`0`であるとみなされます。
+
+<!--
 ```cpp
 float randomColor = ofRandom(50, 255);
 ofSetColor(randomColor);  // Exclude dark grayscale values (0 - 50) that won't show on black background
 ```
+-->
 
+```cpp
+float randomColor = ofRandom(50, 255);
+ofSetColor(randomColor);  // 暗いグレーの値 (0 - 50) は黒い背景で見えないので除外します
+```
+
+<!--
 ![Figure 4: Drawing a rectangle snake](images/Figure4_RectangleSnake.png)
+-->
 
+![図4: 四角形の蛇を描く](images/Figure4_RectangleSnake.png)
+
+<!--
 To finish off this single rectangle brush, let's add the ability to erase by pressing the right mouse button by adding this to our `draw()` function:
+-->
 
+この単一の四角形によるブラシを完成させるために、以下を`draw()`関数に追加して右クリックをすると消去できる機能を加えましょう。
+
+<!--
 ```cpp
 if (ofGetMousePressed(OF_MOUSE_BUTTON_RIGHT)) {  // If the right mouse button is pressed...
     ofBackground(0);  // Draw a black background over the screen
 }
 ```
+-->
 
+```cpp
+if (ofGetMousePressed(OF_MOUSE_BUTTON_RIGHT)) {  // 右マウスボタンが押下されたら…
+    ofBackground(0);  // 画面いっぱいに黒い背景を描画します。
+}
+```
+
+<!--
 \[[Source code for this section](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/1_ii_a_Single_Rectangle_Brush)\]
 
 \[[ofSketch file for this section](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_ii_a_Single_Rectangle_Brush.sketch)\]
+-->
 
+\[[このセクションのソースコード](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/1_ii_a_Single_Rectangle_Brush)\]
+
+\[[このセクションの ofSketch ファイル](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_ii_a_Single_Rectangle_Brush.sketch)\]
+
+<!--
 #### Bursting Rectangle Brush: Creating Randomized Bursts
+-->
 
+#### 四角形が飛び散るブラシ：ランダムな飛散を作る
+
+<!--
 We now have the basics in place for a brush, but instead of drawing a single rectangle in `draw()`, let's draw a burst of randomized rectangles. We are going use a `for` loop to create multiple rectangles whose parameters are randomly chosen. What can we randomize? Grayscale color, width and height are easy candidates. We can also use a small positive or negative value to offset each rectangle from mouse position. Modify `draw()` to look like this:
+-->
 
+ブラシの基礎はできましたが、`draw()`の中で単一の四角形を描画する代わりに、ランダムな四角形が飛び散るのを描画してみましょう。`for`ループを使って複数の四角形を作成し、そのパラメータはランダムに選択されるようにします。なにがランダムにできるでしょう？グレースケールの色、幅や高さが単純な候補になるでしょう。わずかな正負の値でそれぞれの四角形をマウス位置からオフセットすることもできます。`draw()`を以下のように改変しましょう。
+
+<!--
 ```cpp
 if (ofGetMousePressed(OF_MOUSE_BUTTON_LEFT)) {  // If the left mouse button is pressed...
     ofSetRectMode(OF_RECTMODE_CENTER);
@@ -248,15 +354,48 @@ if (ofGetMousePressed(OF_MOUSE_BUTTON_LEFT)) {  // If the left mouse button is p
     }
 }
 ```
+-->
 
+```cpp
+if (ofGetMousePressed(OF_MOUSE_BUTTON_LEFT)) {  // 左マウスボタンが押されると…
+    ofSetRectMode(OF_RECTMODE_CENTER);
+    int numRects = 10;
+    for (int r=0; r<numRects; r++) {
+        ofSetColor(ofRandom(50, 255));
+        float width = ofRandom(5, 20);
+        float height = ofRandom(5, 20);
+        float xOffset = ofRandom(-40, 40);
+        float yOffset = ofRandom(-40, 40);
+        ofDrawRectangle(ofGetMouseX()+xOffset, ofGetMouseY()+yOffset, width, height);
+    }
+}
+```
+
+<!--
 But! Add one more thing, inside of `setup()`, before hitting run: `ofSetFrameRate(60)`. The frame rate is the speed limit of our program, frames per second (fps). `update()` and `draw()` will not run more than `60` times per second. (ofSketch users - we'll talk about `update()` later.) Note: this is a speed _limit_, not a speed _minimum_ - our code can run slower than `60` fps. We set the frame rate in order to control how many rectangles will be drawn. If `10` rectangles are drawn with the mouse pressed and we know `draw()` won't be called more than `60` times per second, then we will generate a max of `600` rectangles per second.
+-->
 
+しかし！実行ボタンを押す前に、`setup()`の中にもう一つ、`ofSetFrameRate(60)`を追加してください。フレームレートはプログラムの速度制限で、１秒あたりのフレーム数（fps）です。`update()`と`draw()`は秒あたり`60`回以上は実行されません。（ofSketch ユーザの皆さん、`update()`については後ほどお話します）注意。これは速度の _制限_ であって、_最低_ の速度ではありません。コードは`60`fps よりも遅く動作することがあります。いくつの四角形が描画されるかを制御するためにフレームレートを設定しました。マウスを押下すると`10`個の四角形が描画されるとして`draw()`は`60`回以上は 1 秒あたりに呼ばれないので、1 秒あたり最大`600`個の四角形が生成されることになります。
+
+<!--
 Compile, run. We get a box-shaped spread of random rectangles (figure 5, left). Why didn't we get a circular spread (figure 5, right)? Since `xOffset` and `yOffset` could be any value between `-40` and `40`, think about what happens when `xOffset` and `yOffset` take on their most extreme values, i.e. (xOffset, yOffset) values of (-40, -40), (40, -40), (40, 40) and (-40, 40).
+-->
 
+コンパイル、実行しましょう。ランダムな四角形が箱型に広がります（図 5、左）どうして円形（図 5、右）に広がらないのでしょう？`xOffset`と`yOffset`は`-40`と`40`の間のどのような値でも取りうるので、`xOffset`と`yOffset`が最大の値を取ったとき、つまり(xOffset, yOffset)が(-40, -40)、(40, -40)、(40, 40)そして(-40, 40)の値になったときに何が起きるかを考えてみてください。
+
+<!--
 If we want a random point within a circle, it helps to think in terms of angles. Imagine we are at the center of a circle. If we rotate a random amount (the _polar angle_) and then move a random distance (the _polar radius_), we end up in a random location within the circle (assuming we don't walk so far that we cross the boundary of our circle). We just defined a point by a polar angle and a polar radius instead of using `(x, y)`. We have just thought about space in terms of [Polar coordinates](https://en.wikipedia.org/wiki/Polar_coordinate_system), instead of [Cartesian coordinates](https://en.wikipedia.org/wiki/Cartesian_coordinate_system).
+-->
 
+ランダムな点を円の中に収めたければ、角度で考えると良いです。私たちは円の中心にいると想像してください。ランダムな角度（_極角_）だけ回転して、その後ランダムな距離（_極距離_）だけ移動すると、私たちは円の中のランダムな位置にたどり着きます（円の境界を超えるほど遠くには行かないとします）。私たちは単に、`(x, y)`を使う代わりに極角と極距離を使用して点を指定しただけです。空間を[デカルト座標系](https://ja.wikipedia.org/wiki/%E7%9B%B4%E4%BA%A4%E5%BA%A7%E6%A8%99%E7%B3%BB)ではなく[極座標系](https://ja.wikipedia.org/wiki/%E6%A5%B5%E5%BA%A7%E6%A8%99%E7%B3%BB)によって捉えてみることをやってみました。
+
+<!--
 Back to the code. When we figure out our offsets, we want to pick a random direction (polar angle) and random distance (polar distance) which we can then convert to Cartesian coordinates (see code) to use as `xOffset` and `yOffset`. Our loop inside of `draw()` will look like this:
+-->
 
+コードに戻りましょう。オフセットを理解したところで、ランダムな方向（極角）およびランダムな距離（極距離）を選び、デカルト座標系（コードを見てください）に変換して`xOffset`および`yOffset`として使用しましょう。`draw()`の中のループはこんな風になります。
+
+<!--
 ```cpp
 for (int r=0; r<numRects; r++) {
     ofSetColor(ofRandom(50, 255));
@@ -278,12 +417,45 @@ for (int r=0; r<numRects; r++) {
     ofDrawRectangle(ofGetMouseX()+xOffset, ofGetMouseY()+yOffset, width, height);
 }
 ```
+-->
 
+```cpp
+for (int r=0; r<numRects; r++) {
+    ofSetColor(ofRandom(50, 255));
+    float width = ofRandom(5, 20);
+    float height = ofRandom(5, 20);
+    float distance = ofRandom(35);
+
+    // 極座標からデカルト座標への変換公式
+    //  x = cos(polar angle) * (polar distance)
+    //  y = sin(polar angle) * (polar distance)
+
+    // sin()やcos()を使う場合には角度はラジアンである必要がある
+    // 角度からラジアンへの変換には
+    // openFrameworksの関数が使えます
+    float angle = ofRandom(ofDegToRad(360.0));
+
+    float xOffset = cos(angle) * distance;
+    float yOffset = sin(angle) * distance;
+    ofDrawRectangle(ofGetMouseX()+xOffset, ofGetMouseY()+yOffset, width, height);
+}
+```
+
+<!--
 ![Figure 5: Cartesian brush spread versus polar brush spread](images/Figure5_CartesianVsPolarSpread.png)
+-->
 
+![図5: デカルド座標系による拡散と極座標系による拡散](images/Figure5_CartesianVsPolarSpread.png)
+
+<!--
 \[[Source code for this section](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/1_ii_b_Bursting_Rect_Brush)\]
 
 \[[ofSketch file for this section](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_ii_a_Single_Rectangle_Brush.sketch)\]
+-->
+
+\[[このセクションのソースコード](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/1_ii_b_Bursting_Rect_Brush)\]
+
+\[[このセクションのofSketchファイル](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_ii_a_Single_Rectangle_Brush.sketch)\]
 
 #### Glowing Circle Brush: Using Transparency and Color
 
