@@ -455,16 +455,33 @@ for (int r=0; r<numRects; r++) {
 
 \[[このセクションのソースコード](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/1_ii_b_Bursting_Rect_Brush)\]
 
-\[[このセクションのofSketchファイル](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_ii_a_Single_Rectangle_Brush.sketch)\]
+\[[このセクションの ofSketch ファイル](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_ii_a_Single_Rectangle_Brush.sketch)\]
 
+<!--
 #### Glowing Circle Brush: Using Transparency and Color
+-->
 
+#### 光彩を放つ円形のブラシ：透明度と色を使用する
+
+<!--
 Unlike what we did with the rectangle brush, we are going to layer colorful, transparent circles on top of each to create a glowing haze. We will draw a giant transparent circle, then draw a slightly smaller transparent circle on top of it, then repeat, repeat, repeat. We can add transparency to `ofSetColor(...)` with a second parameter, the alpha channel (e.g.`ofSetColor(255, 50)`), with a value from `0` (completely transparent) to `255` (completely opaque).
+-->
 
+四角形のブラシでやったこととは異なり、カラフルで透明な円を上に重ねて行き、輝く煙のようにしてみましょう。巨大で透明な円を描画し、次に少し小さな透明の円をその上に、そして繰り返し、繰り返し、繰り返します。透明度は`ofSetColor(...)`の 2 つ目のパラメタ、アルファチャンネルで追加でき（例 `ofSetColor(255, 50)`）、この値は`0`（完全に透明）から`255`（完全に不透明）です。。
+
+<!--
 Before we use alpha, we need to enable something called "alpha blending." Using transparency costs computing power, so [`ofEnableAlphaBlending()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofEnableAlphaBlending) and [`ofDisableAlphaBlending()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofDisableAlphaBlending) allow us to turn on and off this blending at our discretion. We need it, so enable it in `setup()`.
+-->
 
+アルファ値を使う前に、「アルファブレンディング」というものを有効にする必要があります。透明度を扱うことは計算のパワーを使うので、[`ofEnableAlphaBlending()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofEnableAlphaBlending) そして [`ofDisableAlphaBlending()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofDisableAlphaBlending) を使って私たちの判断によるオン・オフが可能です。私たちには必要ですので、`setup()`の中で有効化しましょう。
+
+<!--
 Comment out the rectangle brush code inside the `if` statement that checks if the left mouse button is pressed. Now we can start working on our circle brush. We will use the `angle`, `distance`, `xOffset` and `yOffset` code like before. Our `for` loop will start with a large radius and step its value to `0`. Add the following:
+-->
 
+左マウスボタンが押されたかどうかを判断している`if`宣言の中の四角形のブラシのコードはコメントアウトしましょう。これで円形のブラシに取りかかれます。`angle`、`distance`、`xOffset`と`yOffset`のコードを前と同じように使って行きます。`for`ループは大きな半径から始まって`0`まで段階的に進みます。以下を追加しましょう。
+
+<!--
 ```cpp
 int maxRadius = 100;  // Increase for a wider brush
 int radiusStepSize = 5;  // Decrease for more circles (i.e. a more opaque brush)
@@ -480,13 +497,43 @@ for (int radius=maxRadius; radius>0; radius-=radiusStepSize) {
     ofDrawCircle(ofGetMouseX()+xOffset, ofGetMouseY()+yOffset, radius);
 }
 ```
+-->
 
+```cpp
+int maxRadius = 100;  // 太いブラシにするには大きくします
+int radiusStepSize = 5;  // 小さくするとより多くの円を描きます（つまりより不透明になる）
+int alpha = 3;  // 大きくすると不透明度が上がります。
+int maxOffsetDistance = 100;  // 大きくすると円が広く拡散します
+// だんだん小さくなる円を描いて不透明度を重ねて（高めて）いきます
+for (int radius=maxRadius; radius>0; radius-=radiusStepSize) {
+    float angle = ofRandom(ofDegToRad(360.0));
+    float distance = ofRandom(maxOffsetDistance);
+    float xOffset = cos(angle) * distance;
+    float yOffset = sin(angle) * distance;
+    ofSetColor(255, alpha);
+    ofDrawCircle(ofGetMouseX()+xOffset, ofGetMouseY()+yOffset, radius);
+}
+```
+
+<!--
 ![Figure 6: Results of using the circle glow brush](images/Figure6_CircleGlowBrush.png)
+-->
 
+![図6: 輝く円形のブラシを使用した結果](images/Figure6_CircleGlowBrush.png)
+
+<!--
 We end up with something like figure 6, a glowing light except without color. Tired of living in moody shades of gray? `ofSetColor(...)` can make use of the [Red Blue Green (RGB) color model](https://en.wikipedia.org/wiki/RGB_color_model) in addition to the grayscale color model. We specify the amount (`0` to `255`) of red, blue and green light respectively, e.g. `ofSetColor(255, 0, 0)` for opaque red. We can also add alpha, e.g. `ofSetColor(0, 0, 255, 10)` for transparent blue. Go ahead and modify the `ofSetColor(...)` in our circle brush to use a nice orange: `ofSetColor(255, 103, 0, alpha)`.
+-->
 
+図 6 みたいな光るライトのような感じの、色無しのものになりました。物憂げなグレー色の生活には飽き飽きでしょうか？`ofSetColor(...)`はグレースケールのカラーモデルに加えて[Red Blue Green (RGB) カラーモデル](https://en.wikipedia.org/wiki/RGB_color_model)が使えます。赤、青と緑の光の量（`0`から`255`）をそれぞれ、`ofSetColor(255, 0, 0)`のように指定します。アルファ値も加えることができ、例えば透明な青は`ofSetColor(0, 0, 255, 10)`になります。円形ブラシの`ofSetColor(...)`を変更して良い感じのオレンジ、`ofSetColor(255, 103, 0, alpha)`にしましょう。
+
+<!--
 There's another way we can use `ofSetColor(...)`. Meet [`ofColor`](http://openframeworks.cc/documentation/types/ofColor.html), a handy class for handling colors which allows for fancy color math (among other things). Here are some examples of defining and modifying colors:
+-->
 
+`ofSetColor(...)`を使う別の方法もあります。高度な色の計算（それと他の事も）が可能で色を扱うのに便利なクラスである[`ofColor`](http://openframeworks.cc/documentation/types/ofColor.html)を見てみましょう。色の定義や調整の例をいくつか示します。
+
+<!--
 ```cpp
 ofColor myOrange(255, 132, 0); // Defining an opaque orange color - specified using RGB
 ofColor myBlue(0, 0, 255, 50); // Defining a transparent blue color - specified using RGBA
@@ -510,8 +557,47 @@ ofColor myAqua = ofColor::aqua;
 ofColor myPurple = ofColor::plum;
 // Full list of colors available at: http://openframeworks.cc/documentation/types/ofColor.html
 ```
+-->
 
+```cpp
+ofColor myOrange(255, 132, 0); // 不透明なオレンジ色の定義 - RGBによる指定
+ofColor myBlue(0, 0, 255, 50); // 透明な青色の定義 - RGBAによる指定
+
+// 赤、緑、青とアルファチャンネルにはこのようにアクセスできます
+ofColor myGreen(0, 0, 255, 255);
+cout << "Red channel:" << myGreen.r << endl;
+cout << "Green channel:" << myGreen.g << endl;
+cout << "Blue channel:" << myGreen.b << endl;
+cout << "Alpha channel:" << myGreen.a << endl;
+
+// 赤、緑、青とアルファチャンネルの設定もこのようにできます
+ofColor myYellow;
+myYellow.r = 255;
+myYellow.b = 0;
+myYellow.g = 255;
+myYellow.a = 255;
+
+// openFrameworksによって提供される既定の色も利用できます
+ofColor myAqua = ofColor::aqua;
+ofColor myPurple = ofColor::plum;
+// 利用できる色の完全なリストはこちら: http://openframeworks.cc/documentation/types/ofColor.html
+```
+
+<!--
 If we wanted to make our brush fierier, we would draw using random colors that are in-between orange and red. `ofColor` gives us in-betweenness using something called "[linear interpolation](https://en.wikipedia.org/wiki/Linear_interpolation)" with a function called [`getLerped(...)`](http://openframeworks.cc/documentation/types/ofColor.html#show_getLerped). `getLerped(...)` is a class method of `ofColor`, which means that if we have an `ofColor` variable, we can interpolate like this: `myFirstColor.getLerped(mySecondColor, 0.3)`. (For an explanation of classes and methods, see the _OOPS!_ chapter.) We pass in two arguments, an `ofColor` and a `float` value between `0.0` and `1.0`. The function returns a new `ofColor` that is between the two specified colors, and the `float` determines how close the new color is to our original color (here, `myFirstColor`). We can use this in `draw()` like this:
+-->
+
+ブラシをもっと燃えるような色にしたい場合、描画にオレンジと赤の間のランダムな色を使って描画すると良いでしょう。`ofColor`は[`getLerped(...)`](http://openframeworks.cc/documentation/types/ofColor.html#show_getLerped)という関数によって[線形補間（Linear interpolation）](https://en.wikipedia.org/wiki/Linear_interpolation)を利用し中間表現が可能です。`getLerped(...)`は`ofColor`のクラスメソッドで、こ
+れは`ofColor`型の変数がある場合、`myFirstColor.getLerped(mySecondColor, 0.3)`のような補間が可能になります。（クラスメソッドの説明は _OOPS!_ の章をご覧ください。）我々は`ofColor`と`0.0`から`1.0`の間の`float`値という 2 つの引数を渡します。この関数は新しい`ofColor`を返し、これは指定された 2 つの色の中間で、`float`値は新しい色がどれだけ元の色（ここでは`myFirstColor`）に近いかを定義しています。これは`draw()`ではこのように利用できます。
+
+<!--
+```cpp
+ofColor myOrange(255, 132, 0, alpha);
+ofColor myRed(255, 6, 0, alpha);
+ofColor inBetween = myOrange.getLerped(myRed, ofRandom(1.0));
+ofSetColor(inBetween);
+```
+-->
 
 ```cpp
 ofColor myOrange(255, 132, 0, alpha);
@@ -520,14 +606,29 @@ ofColor inBetween = myOrange.getLerped(myRed, ofRandom(1.0));
 ofSetColor(inBetween);
 ```
 
+<!--
 \[[Source code for this section](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/1_ii_c_Glowing_Circle_Brush)\]
 
 \[[ofSketch file for this section](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_ii_c_Glowing_Circle_Brush.sketch)\]
+-->
 
+\[[このセクションのソースコード](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/1_ii_c_Glowing_Circle_Brush)\]
+
+\[[このセクションの ofSketch ファイル](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_ii_c_Glowing_Circle_Brush.sketch)\]
+
+<!--
 #### Star Line Brush: Working with a Linear Map
+-->
 
+#### 星状の直線ブラシ：線形マッピングに触れる
+
+<!--
 What about lines? We are going to create a brush that draws lines that radiate out from the mouse to create something similar to an asterisk or a twinkling star (figure 7). Comment out the circle brush and add:
+-->
 
+さて、直線はどうでしょうか？マウスから放射状に線を引き、アスタリスクやきらめく星のようなものを作成してみましょう（図 7）。円のブラシをコメントアウトして、以下を追加します。
+
+<!--
 ```cpp
 int numLines = 30;
 int minRadius = 25;
@@ -542,25 +643,76 @@ for (int i=0; i<numLines; i++) {
     ofDrawLine(ofGetMouseX(), ofGetMouseY(), ofGetMouseX()+xOffset, ofGetMouseY()+yOffset);
 }
 ```
+-->
 
+```cpp
+int numLines = 30;
+int minRadius = 25;
+int maxRadius = 125;
+for (int i=0; i<numLines; i++) {
+    float angle = ofRandom(ofDegToRad(360.0));
+    float distance = ofRandom(minRadius, maxRadius);
+    float xOffset = cos(angle) * distance;
+    float yOffset = sin(angle) * distance;
+    float alpha = ofMap(distance, minRadius, maxRadius, 50, 0);  // 短い直線ほど不透明にする
+    ofSetColor(255, alpha);
+    ofDrawLine(ofGetMouseX(), ofGetMouseY(), ofGetMouseX()+xOffset, ofGetMouseY()+yOffset);
+}
+```
+
+<!--
 What have we done with the alpha? We used [`ofMap(...)`](http://openframeworks.cc/documentation/math/ofMath.html#show_ofMap) to do a linear interpolation, similar to `getLerped(...)`. `ofMap(...)` transforms one range of values into a different range of values - like taking the "loudness" of a sound recorded on a microphone and using it to determine the color of a shape drawn on the screen. To get a "twinkle" effect, we want our shortest lines to be the most opaque and our longer lines to be the most transparent. `ofMap(...)` takes a value from one range and maps it into another range like this: `ofMap(value, inputMin, inputMax, outputMin, outputMax)`. We tell it that distance is a `value` in-between `minRadius` and `maxRadius` and that we want it mapped so that a distance value of 125 (`maxRadius`) returns an alpha value of 50 and a distance value of 25 (`minRadius`) returns an alpha value of 0.
+-->
 
+アルファ値について何をしたでしょう？[`ofMap(...)`](http://openframeworks.cc/documentation/math/ofMath.html#show_ofMap)を用いて、`getLerped(...)`に似た線形補間を行いました。`ofMap(...)`はある値の範囲を別の値の範囲に変換します。ちょうど、マイクで録音された音の「ラウドネス」を取って画面に描画される図形の色を決定するのに使うようなものです。「輝き」のエフェクトのために、短い直線は不透明に、直線が長くなるほど透明にしましょう。`ofMap(...)`は、`ofMap(value, inputMin, inputMax, outputMin, outputMax)`という風に、ある値の範囲を別の値の範囲にマッピングします。`value`は`minRadius`と`maxRadius`の間にあり、距離（distance）が 125（`maxRadius`）の場合にアルファ値として 50、距離が 25（`minRadius`）の時にアルファ値が 0 を返すように宣言しています。
+
+<!--
 We can also vary the line width using: `ofSetLineWidth(ofRandom(1.0, 5.0))`, but remember that if we change the line width in this brush, we will need go back and set our line width back to `1.0` in our other brushes.
+-->
 
+線幅も、`ofSetLineWidth(ofRandom(1.0, 5.0))`を用いて変化させています。しかしこのブラシの線幅を変化させた場合、別のブラシでは線幅を`1.0`に戻さなければならないであろうことを忘れないでください。
+
+<!--
 ![Figure 7: Results from using the line brush](images/Figure7_LineStarBrush.png)
+-->
 
+![図7: 線のブラシを使った結果](images/Figure7_LineStarBrush.png)
+
+<!--
 \[[Source code for this section](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/1_ii_d_Star_Line_Brush)\]
 
 \[[ofSketch file for this section](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_ii_d_Star_Line_Brush.sketch)\]
+-->
 
+\[[このセクションのソースコード](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/1_ii_d_Star_Line_Brush)\]
+
+\[[このセクションの ofSketch ファイル](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_ii_d_Star_Line_Brush.sketch)\]
+
+<!--
 #### Fleeing Triangle Brush: Vectors and Rotations
+-->
 
+#### 飛び散る三角形のブラシ：ベクトルと回転
+
+<!--
 Time for the last brush in section 1: the triangle. We'll draw a bunch of triangles that are directed outward from the mouse position (figure 8, left). `ofDrawTriangle(...)` requires us to specify the three corners of the triangle, which means that we will need to calculate the rotation of the corners to make the triangle point away from the mouse. A new class will make that math easier: [`ofVec2f`](http://openframeworks.cc/documentation/math/ofVec2f.html)\.
+-->
 
+セクション 1 の最後のブラシ、三角形です。マウスの位置から外側に向かう多数の三角形を描きましょう（図 8、左）。`ofDrawTriangle(...)`は三角形の 3 つの角を指定しないといけないですが、これはつまり角の回転を計算してマウスから外側を向くようにする必要があるということです。新しい[`ofVec2f`](http://openframeworks.cc/documentation/math/ofVec2f.html)クラスで計算が簡単にできます。
+
+<!--
 ![Figure 8: Isosceles triangles in a brush, left, and isolated in a diagram, right](images/Figure8_IsoscelesTriangleDiagrams.png)
+-->
 
+![図 8: 二等辺三角形のブラシ（左）、 一つを図解したもの（右）](images/Figure8_IsoscelesTriangleDiagrams.png)
+
+<!--
 We've been defining points by keeping two separate variables: x and y. `ofVec2f` is a 2D vector, and for our purposes, we can just think of it as a point in 2D space. `ofVec2f` allows us to hold both x and y in a single variable (and perform handy math operations):
+-->
 
+これまで、x と y の変数を独立して保持することで点を定義してきました。`ofVec2f`は 2 次元ベクトルで、我々の目的にとってはちょうど 2 次元空間における点であると考えることができます。`ofVec2f`は一つの変数で x と y を保持（加えて便利な数学的計算も）することができます。
+
+<!--
 ```cpp
 ofVec2f mousePos(ofGetMouseX(), ofGetMouseY());  // Defining a new ofVec2f
 
@@ -578,9 +730,33 @@ mousePos.y += yOffset;
 ofVec2f offset(10.0, 30.0);
 mousePos += offset;
 ```
+-->
 
+```cpp
+ofVec2f mousePos(ofGetMouseX(), ofGetMouseY());  // ofVec2fを新しく定義
+
+// xとy座標にはこのようにアクセスします
+cout << "Mouse X: " << mousePos.x << endl;
+cout << "Mouse Y: " << mousePos.y << endl;
+
+// 座標はこのように変更できます
+float xOffset = 10.0;
+float yOffset = 30.0;
+mousePos.x += xOffset;
+mousePos.y += yOffset;
+
+// 上記で行ったことは2つのベクトルを直接加減することで直接行えます。
+ofVec2f offset(10.0, 30.0);
+mousePos += offset;
+```
+
+<!--
 Let's start using it to build the triangle brush. The first step is to draw a triangle (figure 8, right) at the mouse cursor. It will become important later, but we are going to draw our triangle starting from the mouse cursor and pointing to the right. Comment out the line brush, and add:
+-->
 
+手始めに三角形のブラシを作成してみましょう。最初のステップはマウスカーソルの位置に三角形を描画してみます（図 8、右）。後ほど重要になりますが、マウスの位置から開始して右向きの三角形を描くことにしましょう。直線の描画をコメントアウトして、以下を追加します。
+
+<!--
 ```cpp
 ofVec2f mousePos(ofGetMouseX(), ofGetMouseY());
 
@@ -597,9 +773,32 @@ p3 += mousePos;
 ofSetColor(255, 50);
 ofDrawTriangle(p1, p2, p3);
 ```
+-->
 
+```cpp
+ofVec2f mousePos(ofGetMouseX(), ofGetMouseY());
+
+// 原点が(0,0)で右向きの三角形を定義します
+ofVec2f p1(0, 25.0);
+ofVec2f p2(100, 0);
+ofVec2f p3(0, -25.0);
+
+// 三角形をマウス位置まで移動します
+p1 += mousePos;
+p2 += mousePos;
+p3 += mousePos;
+
+ofSetColor(255, 50);
+ofDrawTriangle(p1, p2, p3);
+```
+
+<!--
 Run it and see what happens. We can add rotation with the `ofVec2f` class method [`rotate(...)`](http://openframeworks.cc/documentation/math/ofVec2f.html#show_rotate) like this: `myPoint.rotate(45.0)` where `myPoint` is rotated around the origin, `(0, 0)`, by `45.0` degrees. Back to our code, add this right before shifting the triangle to the mouse position:
+-->
 
+実行してどうなるかみてみましょう。`ofVec2f`クラスの[`rotate(...)`](http://openframeworks.cc/documentation/math/ofVec2f.html#show_rotate)を使って`myPoint.rotate(45.0)`という風に回転を加えることができます。ここでは`myPoint`が原点`(0, 0)`を中心に`45.0`度回転します。コードに戻って、マウス位置に三角形を移動させる直前にこれを追加しましょう。
+
+<!--
 ```cpp
 // Rotate the triangle points around the origin
 float rotation = ofRandom(360); // The rotate function uses degrees!
@@ -607,11 +806,29 @@ p1.rotate(rotation);
 p2.rotate(rotation);
 p3.rotate(rotation);
 ```
+-->
 
+```cpp
+// 原点を中心に三角形を回転させる
+float rotation = ofRandom(360); // rotate関数は角度（degree）を使います！
+p1.rotate(rotation);
+p2.rotate(rotation);
+p3.rotate(rotation);
+```
+
+<!--
 ![Figure 9: Results from using the rotating triangle brush](images/Figure9_RotatingTriangleBrush.png)
+-->
 
+![図 9: 三角形を回転させた結果のブラシ](images/Figure9_RotatingTriangleBrush.png)
+
+<!--
 Our brush looks something like figure 8 (left). If we were to move that rotation code to _after_ we shifted the triangle position, the code wouldn't work very nicely because `rotate(...)` assumes we want to rotate our point around the origin. (Check out the documentation for an alternate way to use `rotate(...)` that rotates around an arbitrary point.) Last step, let's integrate our prior approach of drawing multiple shapes that are offset from the mouse:
+-->
 
+ブラシは図 8（左）のように見えます。`rotate(...)`は原点を中心に点を回転させるとみなすので、もし回転のコードを三角形の移動の _後ろ_ に移動させた場合にはうまく動作しないでしょう（任意の点を中心に回転させる`rotate(...)`の使い方はドキュメントを参照してください）。最後のステップとして、これまでのアプローチをまとめて、複数の図形をマウス位置からずらした位置に描画してみましょう。
+
+<!--
 ```cpp
 ofVec2f mousePos(ofGetMouseX(), ofGetMouseY());
 
@@ -638,29 +855,98 @@ for (int t=0; t<numTriangles; t++) {
     ofDrawTriangle(p1, p2, p3);
 }
 ```
+-->
 
+```cpp
+ofVec2f mousePos(ofGetMouseX(), ofGetMouseY());
+
+int numTriangles = 10;
+int minOffset = 5;
+int maxOffset = 70;
+int alpha = 150;
+for (int t=0; t<numTriangles; t++) {
+    float offsetDistance = ofRandom(minOffset, maxOffset);
+
+    // 原点(0, 0)から右向きの三角形を定義（コードは省略）
+    // 最後のブラシよりも三角形のサイズは少し小さいです - ソースコードを参照
+
+    // 三角形を回転（コード省略）
+
+    ofVec2f triangleOffset(offsetDistance, 0.0);
+    triangleOffset.rotate(rotation);
+
+    p1 += mousePos + triangleOffset;
+    p2 += mousePos + triangleOffset;
+    p3 += mousePos + triangleOffset;
+
+    ofSetColor(255, alpha);
+    ofDrawTriangle(p1, p2, p3);
+}
+```
+
+<!--
 We are now using `ofVec2f` for our offset. We started with a vector that points rightward, the same direction our triangle starts out pointing. When we apply the rotation to them both, they stay in sync (i.e. both pointing away from the mouse). We can push them out of sync with: `triangleOffset.rotate(rotation+90)`, and we get a swirling blob of triangles. After that, we can add some color using `ofRandom(...)` and `getLerped(...)` again (figure 9) or play with fill and line width.
+-->
 
+`ofVec2f`をオフセットに利用しています。はじめは三角形が向いているのと同じ向きの、右向きのベクトルです。これらに回転を適用する際、これらは同期します（つまりマウス位置から外側を向く）。`triangleOffset.rotate(rotation+90)`で同期させないようにして、渦巻く三角形を作る事もできます。このあとで、`ofRandom(...)`や`getLerped(...)`を使って色を加えたり（図 9）塗りつぶしや線幅で遊んでみても良いでしょう。
+
+<!--
 ![Figure 10: Results from using the final triangle brush](images/Figure10_TriangleSwirlBrush.png)
+-->
 
+![図 10: 完成した三角形ブラシの結果](images/Figure10_TriangleSwirlBrush.png)
+
+<!--
 \[[Source code for this section](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/1_ii_e_Triangle_Brush)\]
 
 \[[ofSketch file for this section](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_ii_e_Triangle_Brush.sketch)\]
+-->
 
+\[[このセクションのソースコード](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/1_ii_e_Triangle_Brush)\]
+
+\[[このセクションの ofSketch ファイル](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_ii_e_Triangle_Brush.sketch)\]
+
+<!--
 **Extensions**
+-->
 
+**発展**
+
+<!--
 1. Define some public variables to control brush parameters like `transparency`, `brushWidth`, `offsetDistance`, `numberOfShapes`, etc.
 2. Use the [`keyPressed(int key)`](http://openframeworks.cc/documentation/application/ofBaseApp.html#!show_keyPressed) function (in `.cpp`) to control those parameters at run time (e.g. increasing/decreasing `brushWidth` with the `+` and `-` keys). If you are using ofSketch, see the next section for how to use that function.
 3. Track the mouse position and use the distance it moves between frames to control those parameters (e.g. fast moving mouse draws a thicker brush).
+-->
 
+1. `透明度（transparency）`、`ブラシ幅（brushWidth）`、`オフセット距離（offsetDistance）`、`図形の数（numberOfShapes）`等のパブリックな変数を定義してブラシのパラメタを制御してみましょう。
+2. [`keyPressed(int key)`](http://openframeworks.cc/documentation/application/ofBaseApp.html#!show_keyPressed)関数を（`.cpp`の中で）使って、実行時にそれらのパラメータを制御してみましょう（例 `+`と`-`キーで`ブラシ幅（brushWidth）`を増加/減少させる）。ofSketch を使っているのであれば、次のセクションでこの関数をどう使うかをご覧ください。
+3. マウス位置をトラッキングし、フレーム間で移動した距離でパラメータを制御してみましょう（例 マウスを速く動かすとブラシが濃くなる）。
+
+<!--
 #### Raster Graphics: Taking a Snapshot
+-->
 
+#### ラスターグラフィックス：スナップショットの撮影
+
+<!--
 Before we move on, let's save a snapshot of our canvas. We'll want to use the [`keyPressed(int key)`](http://openframeworks.cc/documentation/application/ofBaseApp.html#!show_keyPressed) function. This function is built into your application by default. Any time a key is pressed, the code you put into this function is called. The `key` variable is an integer that represents the key that was pressed.
+-->
 
+続ける前に、キャンバスのスナップショットを保存しましょう。[`keyPressed(int key)`](http://openframeworks.cc/documentation/application/ofBaseApp.html#!show_keyPressed)関数を利用します。この関数はアプリケーションにデフォルトで組み込まれています。キーが押されるといつでも、この関数の中に書かれたコードが呼ばれます。`key`変数は整数で、押されたキーを示します。
+
+<!--
 If you are using project generator, you'll find `keyPressed(...)` in your `.cpp` file. If you are using ofSketch, you might not see the function, but it is easy to add. See the [ofSketch file](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_ii_e_Triangle_Brush.sketch) for the last section.
+-->
 
+project generator を利用しているならば、`keyPressed(...)`は`.cpp`ファイルの中にあります。ofSketch を利用している場合、この関数は見当たらないかもしれませんが、簡単に追加できます。[ofSketch file](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/1_ii_e_Triangle_Brush.sketch)の最後のセクションをみてください。
+
+<!--
 In the `keyPressed(...)` function, add the following:
+-->
 
+`keyPressed(...)`関数に、以下を追加しましょう。
+
+<!--
 ```cpp
 if (key == 's') {
     // It's strange that we can compare the int key to a character like `s`, right?  Well, the super short
@@ -670,8 +956,23 @@ if (key == 's') {
     ofSaveScreen("savedScreenshot_"+ofGetTimestampString()+".png");
 }
 ```
+-->
 
+```cpp
+if (key == 's') {
+    // `s`のような文字と整数型のキーを比較しているのは奇妙に見えるでしょうか？
+    // よろしい、とても短い答えは、プログラミングでは文字は数値として表現されているからです。
+    // `s`と115は同じものです。もっと知りたければ、ASCIIについてのwikiを参照してください。
+    glReadBuffer(GL_FRONT);  // HACK: only needed on windows, when using ofSetAutoBackground(false)
+    ofSaveScreen("savedScreenshot_"+ofGetTimestampString()+".png");
+}
+```
+
+<!--
 [`ofSaveScreen(...)`](http://openframeworks.cc/documentation/utils/ofUtils.html#show_ofSaveScreen) grabs the current screen and saves it to a file inside of our project's `./bin/data/` folder with a filename we specify. The timestamp is used to create a unique filename, allowing us to save multiple screenshots without worrying about them overriding each other. So press the `s` key and check out your screenshot!
+-->
+
+[`ofSaveScreen(...)`](http://openframeworks.cc/documentation/utils/ofUtils.html#show_ofSaveScreen)は現在のスクリーンをキャプチャしてそれをプロジェクトの中の`./bin/data/`フォルダの中に指定したファイル名で保存します。タイムスタンプをユニークなファイル名を作成するために使っていますが、これで複数のスクリーンショットが互いに上書きされる心配なく保存できます。さて`s`キーを押してスクリーンショットを確認してみましょう！
 
 ## Brushes from Freeform Shapes
 
