@@ -974,9 +974,17 @@ if (key == 's') {
 
 [`ofSaveScreen(...)`](http://openframeworks.cc/documentation/utils/ofUtils.html#show_ofSaveScreen)は現在のスクリーンをキャプチャしてそれをプロジェクトの中の`./bin/data/`フォルダの中に指定したファイル名で保存します。タイムスタンプをユニークなファイル名を作成するために使っていますが、これで複数のスクリーンショットが互いに上書きされる心配なく保存できます。さて`s`キーを押してスクリーンショットを確認してみましょう！
 
+<!--
 ## Brushes from Freeform Shapes
+-->
 
+## 自由形状を用いたブラシ
+
+<!--
 In the last section, we drew directly onto the screen. We were storing graphics (brush strokes) as pixels, and therefore working with [raster graphics](https://en.wikipedia.org/wiki/Raster_graphics). For this reason, it is hard to isolate, move or erase a single brush stroke. It also means we can't re-render our graphics at a different resolution. In contrast, [vector graphics](https://en.wikipedia.org/wiki/Vector_graphics) store graphics as a list of geometric objects instead of pixel values. Those objects can be modified (erased, moved, rescaled, etc.) after we "place" them on our screen.
+-->
+
+先ほどのセクションでは、画面に直接描画を行いました。グラフィック（ブラシの軌跡）はピクセルで保存していますので、つまり[ラスターグラフィックス](https://en.wikipedia.org/wiki/Raster_graphics)を扱っています。このため、ブラシの軌跡を個別に移動させたり消去したりすることは困難です。
 
 In this section, we are going to make a kind of vector graphics by using custom ("freeform") shapes in openFrameworks. We will use structures (`ofPolyline` and `vector<ofPolyline>`) that allow us to store and draw the path that the mouse takes on the screen. Then we will play with those paths to create brushes that do more than just trace out the cursor's movement.
 
