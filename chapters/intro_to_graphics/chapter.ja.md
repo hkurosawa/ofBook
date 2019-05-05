@@ -986,11 +986,31 @@ In the last section, we drew directly onto the screen. We were storing graphics 
 
 先ほどのセクションでは、画面に直接描画を行いました。グラフィック（ブラシの軌跡）はピクセルで保存していますので、つまり[ラスターグラフィックス](https://en.wikipedia.org/wiki/Raster_graphics)を扱っています。このため、ブラシの軌跡を個別に移動させたり消去したりすることは困難です。
 
+<!--
 In this section, we are going to make a kind of vector graphics by using custom ("freeform") shapes in openFrameworks. We will use structures (`ofPolyline` and `vector<ofPolyline>`) that allow us to store and draw the path that the mouse takes on the screen. Then we will play with those paths to create brushes that do more than just trace out the cursor's movement.
+-->
 
+このセクションでは、openFrameworks で独自（自由な）形状を利用してベクタグラフィックスを作ってみましょう。構造体（`ofPolyline` と `vector<ofPolyline>`）を使ってスクリーン上のマウスの軌跡を保存して描画します。それからこのパスを利用して、単にカーソルの動きを追随するだけ以上のブラシを作成してみます。
+
+<!--
 ### Basic Polylines
+-->
 
+### 基本的なポリライン
+
+<!--
 Create a new project called "Polylines," and say hello to [`ofPolyline`](http://openframeworks.cc/documentation/graphics/ofPolyline.html). `ofPolyline` is a data structure that allows us to store a series of sequential points and then connect them to draw a line. Let's dive into some code. In your header file (inside "class ofApp" in "ofApp.h" to be precise), define three `ofPolylines`:
+-->
+
+"Polylines"という名前の新規プロジェクトを作成して、[`ofPolyline`](http://openframeworks.cc/documentation/graphics/ofPolyline.html)を見てみましょう。`ofPolyline`は順序だった点の連なりを保存して連結し、線を描画することのできるデータ構造です。コードを見てみましょう。ヘッダファイル（正確には"ofApp.h"の"class ofApp"の中）に 3 つの`ofPolylines`を宣言します。
+
+<!--
+```cpp
+ofPolyline straightSegmentPolyline;
+ofPolyline curvedSegmentPolyline;
+ofPolyline closedShapePolyline;
+```
+-->
 
 ```cpp
 ofPolyline straightSegmentPolyline;
@@ -998,8 +1018,13 @@ ofPolyline curvedSegmentPolyline;
 ofPolyline closedShapePolyline;
 ```
 
+<!--
 We can fill those `ofPolylines` with points in `setup()`:
+-->
 
+この`ofPolylines`には`setup()`で点を追加できます。
+
+<!--
 ```cpp
 straightSegmentPolyline.addVertex(100, 100);  // Add a new point: (100, 100)
 straightSegmentPolyline.addVertex(150, 150);  // Add a new point: (150, 150)
@@ -1021,9 +1046,37 @@ closedShapePolyline.addVertex(800, 125);
 closedShapePolyline.addVertex(700, 150);
 closedShapePolyline.close();  // Connect first and last vertices
 ```
+-->
 
+```cpp
+straightSegmentPolyline.addVertex(100, 100);  // 新規の点を追加: (100, 100)
+straightSegmentPolyline.addVertex(150, 150);  // 新規の点を追加: (150, 150)
+straightSegmentPolyline.addVertex(200, 100);  // 等々...
+straightSegmentPolyline.addVertex(250, 150);
+straightSegmentPolyline.addVertex(300, 100);
+
+curvedSegmentPolyline.curveTo(350, 100);  // これらの曲線はキャットムル-ロム（Catmull-Rom）スプライン
+curvedSegmentPolyline.curveTo(350, 100);  // 制御点として必要な重複です
+curvedSegmentPolyline.curveTo(400, 150);
+curvedSegmentPolyline.curveTo(450, 100);
+curvedSegmentPolyline.curveTo(500, 150);
+curvedSegmentPolyline.curveTo(550, 100);
+curvedSegmentPolyline.curveTo(550, 100);  // 制御点として必要な重複です
+
+closedShapePolyline.addVertex(600, 125);
+closedShapePolyline.addVertex(700, 100);
+closedShapePolyline.addVertex(800, 125);
+closedShapePolyline.addVertex(700, 150);
+closedShapePolyline.close();  // 最初と最後の点を結合
+```
+
+<!--
 We can now draw our polylines in the `draw()` function:
+-->
 
+これで`draw()`関数の中でポリラインを描画できます。
+
+<!--
 ```cpp
 ofBackground(0);
 ofSetLineWidth(2.0);  // Line widths apply to polylines
@@ -1032,28 +1085,89 @@ straightSegmentPolyline.draw();  // This is how we draw polylines
 curvedSegmentPolyline.draw();  // Nice and easy, right?
 closedShapePolyline.draw();
 ```
+-->
 
+```cpp
+ofBackground(0);
+ofSetLineWidth(2.0);  // ポリラインに適用する線幅
+ofSetColor(255,100,0);
+straightSegmentPolyline.draw();  // これはポリラインの描画方法です
+curvedSegmentPolyline.draw();  // いい感じだし簡単ですよね？
+closedShapePolyline.draw();
+```
+
+<!--
 We created three different types of polylines (figure 11). `straightSegmentPolyline` is composed of a series points connected with straight lines. `curvedSegmentPolyline` uses the same points but connects them with curved lines. The curves that are created are [Catmull–Rom splines](https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline), which use four points to define a curve: two define the start and end, while two control points determine the curvature. These control points are the reason why we need to add the first and last vertex twice. Lastly, `closedShapePolyline` uses straight line segments that are closed, connecting the first and last vertices.
+-->
 
+3 つの異なるタイプのポリラインを作成しました（図 11）。`straightSegmentPolyline`は直線で繋がれた一連の点で構成されています。`curvedSegmentPolyline`は同じ点を利用しますが、それらは曲線で接続されています。作成された曲線は[キャットムル-ロム（Catmull-Rom）スプライン](https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline)で、これは曲線を定義するのに点を 4 つ使い、始点と終点で 2 つ、2 つの制御点が曲率を決めます。この制御点が最初と最後の点を 2 回追加した理由です。最後に、`closedShapePolyline`は最初と最後の点を繋いだ閉じた直線を利用します。
+
+<!--
 ![Figure 11: Examples of polylines - straight, curved and closed straight](images/Figure11_PolylineExamples.png)
+-->
 
+![図 11: ポリラインの例 - 直線、曲線および閉じた直線](images/Figure11_PolylineExamples.png)
+
+<!--
 The advantage of drawing in this way (versus raster graphics) is that the polylines are modifiable. We could easily move, add, delete, scale our vertices on the the fly.
+-->
 
+このように描画する（ラスタグラフィックスに対する）利点は、ポリラインは調整できるということです。実行中に点を容易に移動、追加、削除、拡縮することができます。
+
+<!--
 \[[Source code for this section](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/2_i_Basic_Polylines)\]
 
 \[[ofSketch file for this section](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/2_i_Basic_Polylines.sketch)\]
+-->
 
+\[[このセクションのソースコード](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/2_i_Basic_Polylines)\]
+
+\[[このセクションの ofSketch ファイル](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/2_i_Basic_Polylines.sketch)\]
+
+<!--
 **Extensions**
+-->
 
+**発展**
+
+<!--
 1. Check out [`arc(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_arc), [`arcNegative(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_arcNegative) and [`bezierTo(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_bezierTo) for other ways to draw shapes with `ofPolyline`.
+-->
 
+1. [`arc(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_arc)、 [`arcNegative(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_arcNegative) と [`bezierTo(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_bezierTo)をチェックして`ofPolyline`を使って形状を描画するその他の方法を見てみましょう。
+
+<!--
 ### Building a Brush from Polylines
+-->
 
+### ポリラインからブラシを作成する
+
+<!--
 #### Polyline Pen: Tracking the Mouse
+-->
 
+#### ポリラインのペン：マウスのトラッキング
+
+<!--
 Let's use polylines to draw brush strokes. Create a new project, "PolylineBrush." When the left mouse button is held down, we will create an `ofPolyline` and continually extend it to the current mouse position. We will use a `bool` to tell us if the left mouse button is being held down. If it is being held down, we'll add the mouse position to the polyline, but instead of adding _every_ mouse position, we'll add the mouse positions where the mouse has moved a distance away from the last point in our polyline.
+-->
 
+ブラシの軌跡を描くのにポリラインを利用してみましょう。新規プロジェクトを作成して"PolylineBrush”という名前にします。マウスの左ボタンが押下されている間、`ofPolyline`を作成して現在のマウス位置まで継続的に延長していきます。`bool`を使って左マウスボタンが押下されているかどうかを判別します。押下されている間は、ポリライン（Polyline）にマウス位置を追加しますが、マウス位置を _全て_ 追加するのではなく、最後の場所からある程度移動した場合にポリラインにマウス位置を追加します。
+
+<!--
 Let's move on to the code. Create four variables in the header:
+-->
+
+コードに移りましょう。ヘッダで 4 つの変数を作成します。
+
+<!--
+```cpp
+ofPolyline currentPolyline;
+bool leftMouseButtonPressed;
+ofVec2f lastPoint;
+float minDistance;
+```
+-->
 
 ```cpp
 ofPolyline currentPolyline;
@@ -1062,19 +1176,43 @@ ofVec2f lastPoint;
 float minDistance;
 ```
 
+<!--
 Initialize `minDistance` and `leftMouseButtonPressed` in `setup()`:
+-->
+
+`minDistance` と `leftMouseButtonPressed` を `setup()` で初期化します。
+
+<!--
+```cpp
+minDistance = 10;
+leftMouseButtonPressed = false;
+```
+-->
 
 ```cpp
 minDistance = 10;
 leftMouseButtonPressed = false;
 ```
 
+<!--
 Now we are going to take advantage of two new functions - [`mousePressed(int x, int y, int button)`](http://openframeworks.cc/documentation/application/ofBaseApp.html#!show_mousePressed) and [`mouseReleased(int x, int y, int button)`](http://openframeworks.cc/documentation/application/ofBaseApp.html#show_mouseReleased). These are functions that are built into your application by default. They are event handling functions, so whenever a mouse button is pressed, whatever code you put into `mousePressed(...)` is called. It's important to note that `mousePressed(...)` is only called when the mouse button is initially pressed. No matter how long we hold the mouse button down, the function is still only called once. The same goes for `mouseReleased(...)`.
+-->
 
+ここで [`mousePressed(int x, int y, int button)`](http://openframeworks.cc/documentation/application/ofBaseApp.html#!show_mousePressed) そして [`mouseReleased(int x, int y, int button)`](http://openframeworks.cc/documentation/application/ofBaseApp.html#show_mouseReleased) という 2 つの新しい関数を利用してみましょう。これらはアプリケーションにデフォルトで組み込まれています。これらはイベントハンドリングの関数で、したがってマウスボタンが押下されればいつでも、`mousePressed(...)` に書かれたコードが呼ばれます。`mousePressed(...)`はマウスが最初に押された時だけ呼ばれることは注意しておくべきでしょう。マウスボタンをどれだけ長く押下し続けていても、この関数は一度しか呼ばれません。`mouseReleased(...)` も同様です。
+
+<!--
 The functions have a few variables `x`, `y` and `button` that allow you to know a bit more about the particular mouse event that just occurred. `x` and `y` are the screen coordinates of the cursor, and `button` is an `int` that represents the particular button on the mouse that was pressed/released. Remember the public constants like `OF_MOUSE_BUTTON_LEFT` and `OF_MOUSE_BUTTON_RIGHT`? To figure out what `button` is, we'll compare it against those constants.
+-->
 
+この関数は `x`、`y` そして `button` の変数があって、今まさに発生した固有のマウスイベントについてより詳しく知ることができます。`x` と `y` はカーソルのスクリーン上での座標、`button` は `int` 型で、押された/離されたマウスボタンを表しています。`OF_MOUSE_BUTTON_LEFT` や `OF_MOUSE_BUTTON_RIGHT` といったパブリック定数を覚えていますか？`button` がどれかを知るにはこれらの定数との比較を行います。
+
+<!--
 Let's turn back to the code. If you are using project generator, you'll find these mouse functions in your `.cpp` file. If you are using ofSketch, you might not see these functions, but they are easy to add. See the [ofSketch file](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/2_ii_a_Polyline_Pen.sketch) for this section. Inside of `mousePressed(...)`, we want to start the polyline:
+-->
 
+コードに戻りましょう。project generator を利用している場合は、マウス関数は `.cpp` ファイルの中にあります。ofSketch を使っている場合はこれらの関数がありませんが、簡単に追加することができます。このセクションの[ofSketch file](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/2_ii_a_Polyline_Pen.sketch)を見てみてください。`mousePressed(...)` の中で、ポリラインを開始しましょう。
+
+<!--
 ```cpp
 if (button == OF_MOUSE_BUTTON_LEFT) {
     leftMouseButtonPressed = true;
@@ -1082,11 +1220,26 @@ if (button == OF_MOUSE_BUTTON_LEFT) {
     currentPolyline.curveTo(x, y);  // Necessary duplicate for first control point
     lastPoint.set(x, y);  // Set the x and y of a ofVec2f in a single line
 }
+-->
+
+```cpp
+if (button == OF_MOUSE_BUTTON_LEFT) {
+    leftMouseButtonPressed = true;
+    currentPolyline.curveTo(x, y);  // xとyはマウスの位置です
+    currentPolyline.curveTo(x, y);  // 最初の制御点のために必要な重複です
+    lastPoint.set(x, y);  // ofVec2fのxとyを単一の線に設定します
+}
 
 ```
 
+<!--
+Inside of `mouseReleased(...)`, we want to end the polyline:
+-->
+
+`mouseReleased(...)`の中でポリラインを終了します。
 Inside of `mouseReleased(...)`, we want to end the polyline:
 
+<!--
 ```cpp
 if (button == OF_MOUSE_BUTTON_LEFT) {
     leftMouseButtonPressed = false;
@@ -1094,11 +1247,29 @@ if (button == OF_MOUSE_BUTTON_LEFT) {
     currentPolyline.clear();  // Erase the vertices, allows us to start a new brush stroke
 }
 ```
+-->
 
+```cpp
+if (button == OF_MOUSE_BUTTON_LEFT) {
+    leftMouseButtonPressed = false;
+    currentPolyline.curveTo(x, y); // 最後の制御点のために必要な重複です
+    currentPolyline.clear();  // 頂点を消去して新しいブラシのストロークを開始できるようにします
+}
+```
+
+<!--
 Now let's move over to the `update()` function. For ofSketch users, this is another default function that you might not see in your sketch. It is a function that is called once per frame, and it is intended for doing non-drawing tasks. It's easy to add - see the [ofSketch file](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/2_ii_a_Polyline_Pen.sketch) for this section.
+-->
 
+`update()` 関数に行ってみましょう。ofSketch ユーザーは、こちらも sketch では見つけられないデフォルト関数です。これはフレームごとに一回、描画以外のタスクのために呼ばれる関数です。簡単に追加することができますので、このセクションの[ofSketch file](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/2_ii_a_Polyline_Pen.sketch)をご覧ください。
+
+<!--
 Let's add points to our polyline in `update()`:
+-->
 
+`update()` でポリラインに点を追加しましょう。
+
+<!--
 ```cpp
 if (leftMouseButtonPressed) {
     ofVec2f mousePos(ofGetMouseX(), ofGetMouseY());
@@ -1110,13 +1281,34 @@ if (leftMouseButtonPressed) {
     }
 }
 ```
+-->
 
+```cpp
+if (leftMouseButtonPressed) {
+    ofVec2f mousePos(ofGetMouseX(), ofGetMouseY());
+    if (lastPoint.distance(mousePos) >= minDistance) {
+        // a.distance(b) は点aとbの間のユークリッド距離を計算します。
+        // これは点の間の直線距離です。
+        currentPolyline.curveTo(mousePos);  // curveTo(...)にofVec2fを利用します
+        lastPoint = mousePos;
+    }
+}
+```
+
+<!--
 Note that this only adds points when the mouse has moved a certain threshold amount (`minDistance`) away from the last point we added to the polyline. This uses the [`distance(...)`](http://openframeworks.cc/documentation/math/ofVec2f.html#show_distance) method of `ofVec2f`.
+-->
 
+ポリラインに追加した最後の場所から特定のしきい値（`minDistance`）移動した場合にだけ点を追加していることに注目してください。これは `ofVec2f` の [`distance(...)`](http://openframeworks.cc/documentation/math/ofVec2f.html#show_distance) メソッドを利用しています。
+
+<!--
 All that is left is to add code to draw the polyline in `draw()`, and we've got a basic curved polyline drawing program. But we don't have the ability to save multiple polylines, so we have something similar to an [Etch A Sketch](https://en.wikipedia.org/wiki/Etch_A_Sketch). We can only draw a single, continuous line. In order to be able to draw multiple lines that don't have to be connected to each other, we will turn to something called a `vector`. This isn't the same kind of vector that we talked about earlier in the context of `of2Vecf`. If you haven't seen vectors before, check out the [stl::vector basics tutorial](http://openframeworks.cc/ofBook/chapters/stl_vector.html) on the site.
+-->
 
+残すは`draw()`の中でポリラインを描画するコードを追加することで、すでに基本的なポリライン描画のプログラムはありますが、複数のポリラインを保存することはできませんので、[Etch A Sketch](https://en.wikipedia.org/wiki/Etch_A_Sketch)に似たことをやりましょう。可能なことは、単一の連続する線を描画することだけです。違いに連結していない複数の線を描画できるようにするために、`vector`というものを使います。これは`of2Vecf`の文脈で先述したベクター（vector）と同じ種類のものではありません。もしこれまでにベクターを見ていなければ、このサイトの[stl::vector basics tutorial](http://openframeworks.cc/ofBook/chapters/stl_vector.html)を参照してください。
 Define `vector <ofPolyline> polylines` in the header. We will use it to save our polyline brush strokes. When we finish a stroke, we want to add the polyline to our vector. So in the if statement inside of `mouseReleased(...)`, before `currentPolyline.clear()`, add `polylines.push_back(currentPolyline)`. Then we can draw the polylines like this:
 
+<!--
 ```cpp
 ofBackground(0);
 ofSetColor(255);  // White color for saved polylines
@@ -1127,26 +1319,72 @@ for (int i=0; i<polylines.size(); i++) {
 ofSetColor(255,100,0);  // Orange color for active polyline
 currentPolyline.draw();
 ```
+-->
 
+```cpp
+ofBackground(0);
+ofSetColor(255);  // 保存されたポリラインは白色です
+for (int i=0; i<polylines.size(); i++) {
+    ofPolyline polyline = polylines[i];
+    polyline.draw();
+}
+ofSetColor(255,100,0);  // アクティブなポリラインはオレンジ色にします
+currentPolyline.draw();
+```
+
+<!--
 And we have a simple pen-like brush that tracks the mouse, and we can draw a dopey smiley face (figure 12).
+-->
 
+マウスを追随する単純なペンのようなブラシで、まぬけなスマイル顔（図 12）を描画してみましょう。
+
+<!--
 ![Figure 12: Drawing a smilie with the polyline brush](images/Figure12_PolylineSmilie.png)
+-->
 
+![図 12: ポリラインブラシでのスマイリーの描画](images/Figure12_PolylineSmilie.png)
+
+<!--
 \[[Source code for this section](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/2_ii_a_Polyline_Pen)\]
 
 \[[ofSketch file for this section](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/2_ii_a_Polyline_Pen.sketch)\]
+-->
 
+\[[このセクションのソースコード](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/2_ii_a_Polyline_Pen)\]
+
+\[[このセクションの ofSketch ファイル](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/2_ii_a_Polyline_Pen.sketch)\]
+
+<!--
 **Extensions**
+-->
 
+**発展**
+
+<!--
 1. Add color!
 2. Explore [`ofBeginSaveScreenAsPDF(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofBeginSaveScreenAsPDF) and [`ofEndSaveScreenAsPDF(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofEndSaveScreenAsPDF) to save your work into a vector file format.
 3. Try using the `keyPressed(...)` function in your source file to add an undo feature that deletes the most recent brush stroke.
 4. Try restructuring the code to allow for a redo feature as well.
+-->
 
+1. 色を追加しましょう！
+2. [`ofBeginSaveScreenAsPDF(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofBeginSaveScreenAsPDF) と [`ofEndSaveScreenAsPDF(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofEndSaveScreenAsPDF) を見て、作品をベクターファイルの形式で保存してみましょう。
+3. `keyPressed(...)` 関数を使って m 最後のブラシの軌跡を削除するようなアンドゥ機能を追加してみましょう。
+4. 同様にリドゥの機能が可能なようにソースコードを再構成してみましょう。
+
+<!--
 #### Polyline Brushes: Points, Normals and Tangents
+-->
 
+#### ポリラインのブラシ：点、法線、接線
+
+<!--
 Since we have the basic drawing in place, now we play with how we are rendering our polylines. We will draw points, normals and tangents. We'll talk about what normals and tangents are in a little bit. First, let's draw points (circles) at the vertices in our polylines. Inside the `for` loop in `draw()` (after `polyline.draw()`), add this:
+-->
 
+これで基本的な描画はできましたので、ポリラインの描画の方法を試してみましょう。点、法線そして接線を描画してみます。もうすぐ法線と接線とはなんなのかは説明します。まずは、ポリラインの頂点に点（円）を描画してみましょう。`draw()`の中の`for`ループ（`polyline.draw()`の後ろ）の中に、以下を追加します。
+
+<!--
 ```cpp
 vector<ofVec3f> vertices = polyline.getVertices();
 for (int vertexIndex=0; vertexIndex<vertices.size(); vertexIndex++) {
@@ -1154,16 +1392,54 @@ for (int vertexIndex=0; vertexIndex<vertices.size(); vertexIndex++) {
     ofDrawCircle(vertex, 5);
 }
 ```
+-->
 
+```cpp
+vector<ofVec3f> vertices = polyline.getVertices();
+for (int vertexIndex=0; vertexIndex<vertices.size(); vertexIndex++) {
+    ofVec3f vertex = vertices[vertexIndex];  // ofVec3fはofVec2fに似ていますが、3次元です
+    ofDrawCircle(vertex, 5);
+}
+```
+
+<!--
 [`getVertices()`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_getVertices) returns a `vector` of `ofVec3f` objects that represent the vertices of our polyline. This is basically what an `ofPolyline` is - an ordered set of `ofVec3f` objects (with some extra math). We can loop through the indices of the vector to pull out the individual vertex locations, and use them to draw circles.
+-->
 
+[`getVertices()`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_getVertices) はポリラインの頂点を表す`ofVec3f`オフジェクトの`vector`を返します。これはそもそもが`ofPolyline`とは何であるか、`ofVec3f`オフジェクトの順序付き（それ追加のいくらかの数学）、ということです。ベクターの要素を走査して、個々の頂点の位置を取得し、円の描画に利用します。
+
+<!--
 What happens when we run it? Our white lines look thicker. That's because our polyline is jam-packed with vertices! Every time we call the `curveTo(...)` method, we create 20 extra vertices (by default). These help make a smooth-looking curve. We can adjust how many vertices are added with an optional parameter, `curveResolution`, in `curveTo(...)`. We don't need that many vertices, but instead of lowering the `curveResolution`, we can make use of [`simplify(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_simplify)\.
+-->
 
+これを実行すると何が起きるでしょうか？白線が太くなったように見えます。これはポリラインが頂点だらけだからです！`curveTo(...)`メソッドを呼ぶたびに、（デフォルトでは）20 個の頂点が追加されています。これで曲線が滑らかに見えているのです。`curveTo(...)`の`curveResolution`という追加のパラメータでいくつの頂点が追加されるかは調整ができます。これほど多くの頂点は必要でありませんが、`curveResolution`を減らす代わりに、[`simplify(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_simplify)を使うことができます。
+
+<!--
 `simplify(...)` is a method that will remove "duplicate" points from our polyline. We pass a single argument into it: `tolerance`, a value between 0.0 and 1.0. The `tolerance` describes how dis-similar points must be in order to be considered 'unique' enough to not be deleted. The higher the `tolerance`, the more points will be removed. So right before we save our polyline by putting it into our `polylines` vector, we can simplify it. Inside of the if statement within `mouseReleased(...)` (before `polylines.push_back(currentPolyline)`), add: `currentPolyline.simplify(0.75)`. Now we should see something like figure 13 (left).
+-->
 
+`simplify(...)`は、「重複した」点をポリラインから除いてくれるメソッドです。これには一つの引数を渡しますが、これは`torelance（許容度）`という 0.0 から 1.0 の間の値です。この`torelance`は、個々の点がどのよう削除されないように「ユニーク（独立）である」と見なされるか、を指定します。`torelance`が高ければ、より多くの点が削除されます。したがってポリラインを`polylines`ベクターに追加して保存する前に、これを単純化しましょう。（`polylines.push_back(currentPolyline)`の前の）`mouseReleased(...)`の中の if ステートメントの中に`currentPolyline.simplify(0.75)`を追加します。これで図 13（左）のようになるでしょう。
+
+<!--
 ![Figure 13: Drawing circles at the vertices of a polyline, without and with resampling points evenly](images/Figure13_PolylinePoints.png)
+-->
 
+![図 13：ポリラインの頂点に円を描画、点の再サンプリングの無しと有り](images/Figure13_PolylinePoints.png)
+
+<!--
 We can also sample points along the polyline using [`getPointAtPercent(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_getPointAtPercent), which takes a `float` between `0.0` and `1.0` and returns a `ofVec3f`. Inside the `draw()` function, comment out the code that draws a circle at each vertex. Below that, add:
+-->
+
+[`getPointAtPercent(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_getPointAtPercent)を使って点を再サンプルすることも可能で、これは`0.0`から`1.0`の間の`float`を受け取って`ofVec3f`を返します。`draw()`関数の中で、各々の頂点で円を描画するコードをコメントアウトします。その下に、下記を追加します。
+
+<!--
+```cpp
+    for (int p=0; p<100; p+=10) {
+        ofVec3f point = polyline.getPointAtPercent(p/100.0);  // Returns a point at a percentage along the polyline
+        ofDrawCircle(point, 5);
+    }
+```
+-->
 
 ```cpp
     for (int p=0; p<100; p+=10) {
@@ -1172,8 +1448,13 @@ We can also sample points along the polyline using [`getPointAtPercent(...)`](ht
     }
 ```
 
+<!--
 Now we have evenly spaced points (figure 13, right). (Note that there is no circle drawn at the end of the line.) Let's try creating a brush stroke where the thickness of the line changes. To do this we need to use a [normal vector](https://en.wikipedia.org/w/index.php?title=Normal_vector). Figure 14 shows normals drawn over some polylines - they point in the opposite (perpendicular) direction to the polyline. Imagine drawing a normal at every point along a polyline, like figure 15. That is one way to add "thickness" to our brush. We can comment out our circle drawing code in `draw()`, and add these lines of code instead:
+-->
 
+これで均等な間隔の点が得られました（図 13 の右側）。（線の最後に円が描かれていないことに注意。）線幅が変化するようなブラシのストロークを作成してみましょう。これを実現するには、[normal vector](https://en.wikipedia.org/w/index.php?title=Normal_vector)を利用します。図 14 はポリラインの上に描かれた法線を示していて、ポリラインに対して向き合った（垂直の）方向を向いています。図 15 のように、ポリラインに沿って全ての点で法線を描画することを想像してください。これはブラシに「太さ」を追加する一つの方法です。円を描画するコードを`draw()`の中からコメントアウトして、代わりに以下のコードを追加しましょう。
+
+<!--
 ```cpp
     vector<ofVec3f> vertices = polyline.getVertices();
     float normalLength = 50;
@@ -1183,10 +1464,41 @@ Now we have evenly spaced points (figure 13, right). (Note that there is no circ
         ofDrawLine(vertex-normal/2, vertex+normal/2);  // Center the scaled normal around the vertex
     }
 ```
+-->
 
+```cpp
+    vector<ofVec3f> vertices = polyline.getVertices();
+    float normalLength = 50;
+    for (int vertexIndex=0; vertexIndex<vertices.size(); vertexIndex++) {
+        ofVec3f vertex = vertices[vertexIndex];  // 頂点を取得
+        ofVec3f normal = polyline.getNormalAtIndex(vertexIndex) * normalLength;  // 法線を拡縮
+        ofDrawLine(vertex-normal/2, vertex+normal/2);  // 拡縮した法線を頂点を中心にセンタリング
+    }
+```
+
+<!--
 We are getting all of the vertices in our `ofPolyline`. But here, we are also using [`getNormalAtIndex`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_getNormalAtIndex) which takes an index and returns an `ofVec3f` that represents the normal vector for the vertex at that index. We take that normal, scale it and then display it centered around the vertex. So, we have something like figure 14 (left), but we can also sample normals, using the function [`getNormalAtIndexInterpolated(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_getNormalAtIndexInterpolated). So let's comment out the code we just wrote, and try sampling our normals evenly along the polyline:
+-->
 
+`ofPolyline`にある頂点全てを取得しています。しかしここでは[`getNormalAtIndex`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_getNormalAtIndex)も利用していて、これは添字（インデックス）を受け取ってその添字の位置にある頂点に対応する法線を表す `ofVec3f`を返します。その法線を取得し、拡縮して頂点を中心にセンタリングして表示します。そうすると、図 14（左）のような状態になりますが、[`getNormalAtIndexInterpolated(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_getNormalAtIndexInterpolated)関数を使って法線をサンプリングすることもできます。さっき書いたばかりのコードをコメントアウトして、ポリラインに沿って法線を均等にサンプリングしてみましょう。
+
+<!--
 ![Figure 14: Drawing normals at the vertices of a polyline, without and with resampling points evenly](images/Figure14_PolylineNormals.png)
+-->
+
+![図 14: ポリラインの頂点の位置に法線を描画、点の均等な再サンプルの無しと有り](images/Figure14_PolylineNormals.png)
+
+<!--
+```cpp
+float normalLength = 50;
+for (int p=0; p<100; p+=10) {
+    ofVec3f point = polyline.getPointAtPercent(p/100.0);
+    float floatIndex = polyline.getIndexAtPercent(p/100.0);
+    ofVec3f normal = polyline.getNormalAtIndexInterpolated(floatIndex) * normalLength;
+    ofDrawLine(point-normal/2, point+normal/2);
+}
+```
+-->
 
 ```cpp
 float normalLength = 50;
@@ -1198,13 +1510,41 @@ for (int p=0; p<100; p+=10) {
 }
 ```
 
+<!--
 We can get an evenly spaced point by using percents again, but `getNormalAtIndexInterpolated(...)` is asking for an index. Specifically, it is asking for a `floatIndex` which means that we can pass in 1.5 and the polyline will return a normal that lives halfway between the point at index 1 and halfway between the point at index 2. So we need to convert our percent, `p/100.0`, to a `floatIndex` using [`getIndexAtPercent(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline/#!show_getIndexAtPercent). Once we've done that, we'll have something like figure 14 (right).
+-->
 
+今度もパーセンテージによる均等な間隔の点が得られましたが、`getNormalAtIndexInterpolated(...)`は添字が必要です。具体的には、これは`floatIndex`という、1.5 を渡すとポリラインが添字の 1 と 2 の間の点の法線を返してくれるものを受け取ります。ですのでパーセントの`p/100.0`は[`getIndexAtPercent(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline/#!show_getIndexAtPercent)を使って`floatIndex`に変換する必要があります。これを行うと、図 14（右）のようになります。
+
+<!--
 Now we can pump up the number of normals in our drawing. Let's change our loop increment from `p+=10` to `p+=1`, change our loop condition from `p<100` to `p<500` and change our `p/100.0` lines of code to `p/500.0`. We might also want to use a transparent white for drawing these normals, so let's add `ofSetColor(255,100)` right before our loop. We will end up being able to draw ribbon lines, like figure 15.
+-->
 
+このあとはドローイングでの法線の数を増やしていくことができます。ループのインクリメントを`p+=10`から`p+=1`にして、ループの条件を`p<100`から`p<500`に変え、`p/100`のコード行を`p/500.0`に変更しましょう。法線を描画する白に透過を利用しても良いので、`ofSetColor(255,100)`をループの直前に追加しましょう。最終的に、図 15 のようなリボンのような線が描画できます。
+
+<!--
 ![Figure 15: Drawing many many normals to fill out the polyline](images/Figure15_PolylineManyNormals.png)
+-->
 
+![図 15: ポリラインを埋めるように描画された非常に多くの法線](images/Figure15_PolylineManyNormals.png)
+
+<!--
 We've just added some thickness to our polylines. Now let's have a quick aside about tangents, the "opposite" of normals. These wonderful things are perpendicular to the normals that we just drew. So if we drew tangents along a perfectly straight line we wouldn't really see anything. The fun part comes when we draw tangents on a curved line, so let's see what that looks like. Same drill as before. Comment out the last code and add in the following:
+-->
+
+これでポリラインに太さが追加できました。それではちょっと余談で、法線の「真逆」の接線に触れましょう。この素晴らしきものはたった今描画したばかりの、法線に対して垂直です。ですのでもし完全な直線に接線を描画すると全く何も見えないでしょう。面白いのは曲線に接線を描画したときで、どんな風かみてみましょう。前と同じやりかたです。最後のコードをコメントアウトして下記を追加しましょう。
+
+<!--
+```cpp
+vector<ofVec3f> vertices = polyline.getVertices();
+float tangentLength = 80;
+for (int vertexIndex=0; vertexIndex<vertices.size(); vertexIndex++) {
+    ofVec3f vertex = vertices[vertexIndex];
+    ofVec3f tangent = polyline.getTangentAtIndex(vertexIndex) * tangentLength;
+    ofDrawLine(vertex-tangent/2, vertex+tangent/2);
+}
+```
+-->
 
 ```cpp
 vector<ofVec3f> vertices = polyline.getVertices();
@@ -1216,11 +1556,37 @@ for (int vertexIndex=0; vertexIndex<vertices.size(); vertexIndex++) {
 }
 ```
 
+<!--
 This should look very familiar except for [`getTangentAtIndex(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_getTangentAtIndex) which is the equivalent of `getNormalAtIndex(...)` but for tangents. Not much happens for straight and slightly curved lines, however, sharply curved lines reveal the tangents figure 16 (left).
+-->
 
+これは[`getTangentAtIndex(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_getTangentAtIndex)が`getNormalAtIndex(...)`と同様ながら接線のためのものであることを除けば見慣れたものです。直線や少しカーブした線では大したことは起きませんが、急にカーブした線では図 16（左）のような接線が現れます。
+)
+
+<!--
 ![Figure 16: Drawing tangents at vertices of polylines](images/Figure16_PolylineTangents.png)
+-->
 
+![図 16: ポリラインの頂点の部分への接線の描画](images/Figure16_PolylineTangents.png)
+
+<!--
 I'm sure you can guess what's next... drawing a whole bunch of tangents at evenly spaced locations (figure 16, right)! It's more fun that it sounds. [`getTangentAtIndexInterpolated(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_getTangentAtIndexInterpolated) works like `getNormalAtIndexInterpolated(...)`. Same drill, comment out the last code, and add the following:
+-->
+
+次に何が起きるかは予想できるでしょう...接線を全ての均等な間隔の位置に描画するのです（図 16、右側）！聞くよりも楽しいです。[`getTangentAtIndexInterpolated(...)`](http://openframeworks.cc/documentation/graphics/ofPolyline.html#show_getTangentAtIndexInterpolated)が`getNormalAtIndexInterpolated(...)`のように機能します。同様のやり方で、最後のコードをコメントアウトし、以下を追加します。
+
+<!--
+```cpp
+ofSetColor(255, 50);
+float tangentLength = 300;
+for (int p=0; p<500; p+=1) {
+    ofVec3f point = polyline.getPointAtPercent(p/500.0);
+    float floatIndex = polyline.getIndexAtPercent(p/500.0);
+    ofVec3f tangent = polyline.getTangentAtIndexInterpolated(floatIndex) * tangentLength;
+    ofDrawLine(point-tangent/2, point+tangent/2);
+}
+```
+-->
 
 ```cpp
 ofSetColor(255, 50);
@@ -1233,26 +1599,63 @@ for (int p=0; p<500; p+=1) {
 }
 ```
 
+<!--
 \[[Source code for this section](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/2_ii_b_Polyline_Brushes)\]
 
 \[[ofSketch file for this section](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/2_ii_b_Polyline_Brushes.sketch)\]
+-->
 
+\[[このセクションのソースコード](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/2_ii_b_Polyline_Brushes)\]
+
+\[[このセクションの ofSketch ファイル](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/2_ii_b_Polyline_Brushes.sketch)\]
+
+<!--
 **Extensions**
+-->
 
+**発展**
+
+<!--
 1. Try drawing shapes other than `ofDrawLine(...)` and `ofDrawCircle(...)` along your polylines. You could use your brush code from section 1.
 2. The density of tangents or normals drawn is dependent on the length of the brush stroke. Try making it independent (hint: you may need to adjust your loop and use `getPerimeter()` to calculate the length).
 3. Check out how to draw polygons using `ofPath` and try drawing a brush stroke that is a giant, closed shape.
+-->
 
+1. `ofDrawLine(...)`と`ofDrawCircle(...)`以外の図形をポリラインに沿って描画してみましょう。セクション 1 のブラシのコードを使うことも可能でしょう。
+2. 描画する接線や法線の密度はブラシのストロークの長さに依存します。これを依存しないようにしてみましょう（ヒント：ループを調整し、`getPerimeter()`を使って長さを計算します。）
+3. `ofPath`を使ってポリゴンを描画する方法を調べ、巨大な、閉じた図形を描画してみましょう。
+
+<!--
 #### Vector Graphics: Taking a Snapshot (Part 2)
+-->
 
+#### ベクターグラフィックス: スナップショットの撮影（パート 2）
+
+<!--
 Remember how we saved our drawings that we made with the basic shape brushes by doing a screen capture? Well, we can also save drawings as a PDF. A PDF stores the graphics as a series of geometric objects rather than as a series of pixel values. So, if we render out our polylines as a PDF, we can open it in a vector graphics editor (like [Inkscape](http://www.inkscape.org/en/) or Adobe Illustrator) and modify our polylines in all sorts of ways. For example, see figure 17 where I colored and blurred the polylines to create a glowing effect.
+-->
 
+画面キャプチャで基本的な形状のブラシで作成したドローイングを保存したやりかたを覚えていますか？ええ、ドローイングは PDF としても保存できます。PDF は一連のピクセル値としてではなく、図形オブジェクトとしてグラフィックを保存します。ですので、もしポリラインを PDF として保存すると、それはベクターグラフィックエディタ（[Inkscape](http://www.inkscape.org/en/) や Adobe Illustrator など）で開き、ポリラインをあらゆる方法で調整することができます。例として、図 17 でポリラインに色付けをしブラーをかけてグローエフェクトを作成しました。
+
+<!--
 Once we have a PDF, we could also use it to blow up our polyines to create a massive, high resolution print.
+-->
 
+PDF ができてしまえば、巨大な、高解像度印刷用にポリラインを引き延ばすこともできます。
+
+<!--
 To do any of this, we need to use [`ofBeginSaveScreenAsPDF(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofBeginSaveScreenAsPDF) and [`ofEndSaveScreenAsPDF()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofEndSaveScreenAsPDF). When we call `ofBeginSaveScreenAsPDF(...)`, any subsequent drawing commands will output to a PDF _instead of_ being drawn to the screen. `ofBeginSaveScreenAsPDF(...)` takes one required argument, a `string` that contains the desired filename for the PDF. (The PDF will be saved into `./bin/data/` unless you specify an alternate path). When we call `ofEndSaveScreenAsPDF()`, the PDF is saved and drawing commands begin outputting back to the screen.
+-->
 
+何をするにせよ、[`ofBeginSaveScreenAsPDF(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#!show_ofBeginSaveScreenAsPDF) および [`ofEndSaveScreenAsPDF()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofEndSaveScreenAsPDF)を使う必要があります。`ofBeginSaveScreenAsPDF(...)`を呼ぶと、後続の描画コマンドは画面に描画される _代わりに_ 、PDF に出力されます。`ofBeginSaveScreenAsPDF(...)`は一つ、PDF の希望ファイル名の`string`が必須の引数です。（PDF は別のパスを指定しなければ`./bin/data/`の中に保存されます）。`ofEndSaveScreenAsPDF()`を呼ぶと PDF は保存されて、描画コマンドはまた画面に出力されるようになります。
+
+<!--
 Let's use the polyline brush code from the last section to save a PDF. The way we saved a screenshot previously was to put `ofSaveScreen()` inside of `keyPressed(...)`. We can't do that here because `ofBeginSaveScreenAsPDF(...)` and `ofEndSaveScreenAsPDF()` need to be before and after (respectively) the drawing code. So we'll make use of a `bool` variable. Add `bool isSavingPDF` to the header (.h) file, and then modify your source code (.cpp) to look like this:
+-->
 
+最後のセクション、ポリラインブラシのプログラムコードを使って PDF を保存してみましょう。以前にスクリンショットを保存したやり方は、`keyPressed(...)`の中に`ofSaveScreen()`を書くというものでした。ここでそれは出来ませんが、なぜならば`ofBeginSaveScreenAsPDF(...)` と `ofEndSaveScreenAsPDF()`は、描画コードの（それぞれ）前と後ろに置く必要があるためです。したがって`bool`変数を利用します。`bool isSavingPDF`をヘッダ（.h）ファイルに追加して、ソースコード（.cpp）を以下のように編集します。
+
+<!--
 ```cpp
 void ofApp::setup(){
     // Setup code omitted for clarity...
@@ -1286,25 +1689,89 @@ void ofApp::keyPressed(int key){
 }
 
 ```
+-->
 
+```cpp
+void ofApp::setup(){
+    // 簡単のためにセットアップコードは省略...
+
+    isSavingPDF = false;
+}
+
+void ofApp::draw(){
+    // isSavingPDF が true ならば（つまり s キーが押されたら）、
+    // ofBeginSaveScreenAsPDF(...) と ofEndSaveScreenAsPDF()の間のものは全て
+    // ファイルに保存されます。
+    if (isSavingPDF) {
+        ofBeginSaveScreenAsPDF("savedScreenshot_"+ofGetTimestampString()+".pdf");
+    }
+
+    // 簡単のために描画コードは省略...
+
+    // PDF の保存を終了し、isSavingPDF フラグを false にリセット
+    // PDF を終了すると openFrameworks は画面描画に戻ります。
+    if (isSavingPDF) {
+        ofEndSaveScreenAsPDF();
+        isSavingPDF = false;
+    }
+}
+
+void ofApp::keyPressed(int key){
+    if (key == 's') {
+        // isSavingPDF はPDFを保存するか否かのフラグ
+        isSavingPDF = true;
+    }
+}
+
+```
+
+<!--
 ![Figure 17: Editing a saved PDF from openFrameworks in Illustrator](images/Figure17_EditingVectorGraphics.png)
+-->
 
-\[[Source code for this section](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/2_ii_c_Save_Vector_Graphics)\]
+![図 17: openFrameworksから保存したPDFをIllustratorで編集する](images/Figure17_EditingVectorGraphics.png)
 
-\[[ofSketch file for this section](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/2_ii_c_Save_Vector_Graphics.sketch)\]
+\[[このセクションのソースコード](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/2_ii_c_Save_Vector_Graphics)\]
 
+\[[このセクションの ofSketch ファイル](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/2_ii_c_Save_Vector_Graphics.sketch)
+
+<!--
 ## Moving The World
+-->
 
+## ワールド座標系の移動
+
+<!--
 We've been making brushes for a long time, so let's move onto something different: moving the world. By the world, I really just mean the coordinate system (though it sounds more exciting the other way).
+-->
 
+ブラシの作成を長いこと行ってきましたので、そろそろ違うこと、世界（ワールド）の移動に取り掛かりましょう。世界（ワールド）とは、実際には座標系を意味しています（though it sounds more exciting the other way）。
+
+<!--
 Whenever we call a drawing function, like `ofDrawRectangle(...)` for example, we pass in an `x` and `y` location at which we want our shape to be drawn. We know (0,0) to be the upper left pixel of our window, that the positive x direction is rightward across our window and that positive y direction is downward along our window (recall figure 1). We are about to violate this established knowledge.
+-->
 
+例えば`ofDrawRectangle(...)`のような描画関数を呼び出すときにはいつでも、図形を描画させたい場所の`x`と`y`座標を渡します。(0,0)はウインドウの左上のピクセルで、正の x の値はウインドウの右向き、正の y の値はウインドウの下向きでしたね（図 1 を思い出してください）。この定説を覆していきましょう。
+
+<!--
 Imagine that we have a piece of graphing paper in front of us. How would we draw a black rectangle at (5, 10) that is 5 units wide and 2 units high? We would probably grab a black pen, move our hands to (5, 10) on our graphing paper, and start filling in boxes? Pretty normal, but we could have also have kept our pen hand stationary, moved our paper 5 units left and 10 units down and then started filling in boxes. Seems odd, right? This is actually a powerful concept. With openFrameworks, we can move our coordinate system like this using `ofTranslate(...)`, but we can _also_ rotate and scale with `ofRotate(...)` and `ofScale(...)`. We will start with translating to cover our screen with stick figures, and then we will rotate and scale to create spiraling rectangles.
+-->
 
+目の前に方眼紙があると想像しましょう。(5,10)の場所に 5 単位の幅と 2 単位の高さの黒い四角形をどのように描画するでしょうか？おそらく黒いペンを手に取って、手を方眼紙の(5,10)に移動し、四角形を塗りつぶすでしょうか？至って普通ですが、ペンを持つ手を止めておいて、紙を 5 単位左、10 単位下に移動して四角形を塗りつぶすこともできるでしょう。変ですか？これは実際には協力な概念です。openFrameworks では、`ofTranslate(...)`を使ってこのように座標系を移動できますが、`ofRotate(...)`や`ofScale(...)`で回転や拡縮 _も_ 行うことができます。まず棒人間で画面を覆うように移動します。そうして回転とスケールで螺旋状の四角形を作成します。
+
+<!--
 ### Translating: Stick Family
+-->
 
+### 移動：棒人間家族
+
+<!--
 [`ofTranslate`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofTranslate) first. `ofTranslate(...)` takes an x, a y and an optional z parameter, and then shifts the coordinate system by those specified values. Why do this? Create a new project and add this to our `draw()` function of our source file (.cpp):
+-->
 
+[`ofTranslate`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofTranslate)が最初です。`ofTranslate(...)`は x、y と任意の z パラメータを受け取り、座標系を指定された値だけ移動します。なぜこれをするか？新規プロジェクトを作成して、ソースファイル（.cpp）の`draw()`関数に以下を追加しましょう。
+
+<!--
 ```cpp
 // Draw the stick figure family
 ofDrawCircle(30, 30, 30);
@@ -1316,13 +1783,39 @@ ofDrawRectangle(30, 110, 30, 60);
 ofDrawCircle(80, 90, 15);
 ofDrawRectangle(65, 110, 30, 60);
 ```
+-->
 
+```cpp
+// 棒人間の家族を描画します
+ofDrawCircle(30, 30, 30);
+ofDrawRectangle(5, 70, 50, 100);
+ofDrawCircle(95, 30, 30);
+ofDrawRectangle(70, 70, 50, 100);
+ofDrawCircle(45, 90, 15);
+ofDrawRectangle(30, 110, 30, 60);
+ofDrawCircle(80, 90, 15);
+ofDrawRectangle(65, 110, 30, 60);
+```
+
+<!--
 Draw a white background and color the shapes. You should end up with something like the leftmost portion of Figure 18.
+-->
 
+白い背景を描画して、図形を塗ります。最終的に図 18 の左端のようになるでしょう。
+
+<!--
 ![Figure 18: Arranging a little stick figure family](images/Figure18_ArrangingTheFamily.png)
+-->
 
+![図 18: 小さな棒人間家族のアレンジArranging a little stick figure family](images/Figure18_ArrangingTheFamily.png)
+
+<!--
 What if, after figuring out where to put our shapes, we needed to draw them at a different spot on the screen, or to draw a row of copies? We _could_ change all the positions manually, or we could use `ofTranslate(...)` to move our coordinate system and leave the positions alone:
+-->
 
+どこに図形を描画するか決定したあとに、画面上の別の場所に描画するか、一連のコピーを描かなければいけないとしたらどうしますか？手動で全ての位置を変更することも _可能_ ですが、`ofTranslate(...)`を使って座標系を移動して位置はそのままに置いておくこともできます。
+
+<!--
 ```cpp
 // Loop and draw a row
 for (int cols=0; cols<4; cols++) {
@@ -1332,13 +1825,37 @@ for (int cols=0; cols<4; cols++) {
     ofTranslate(150, 0);
 }
 ```
+-->
 
+```cpp
+// ループして行を描画する
+for (int cols=0; cols<4; cols++) {
+
+    // 棒人間家族を描画（コードは省略）
+
+    ofTranslate(150, 0);
+}
+```
+
+<!--
 So our original shapes are wrapped it in a loop with `ofTranslate(150, 0)`, which shifts our coordinate system to the left 150 pixels each time it executes. And we'll end up with figure 18 (second from left). Or something close to that, I randomized the colors in the figure - every family is different, right?
+-->
 
+元々の形状はループの中にまとめて`ofTranslate(150,0)`と一緒になっていますが、これは座標系を実行のたびに 150 ピクセルずつ左に移動させます。最終的には図 18（左から 2 番目）のようになります。または似ていますが、画像の色をランダムにしてみました。家族はみんな違いますよね？
+
+<!--
 If we wanted to create a grid of families, we will run into problems. After the first row of families, our coordinate system will have been moved quite far to the left. If we move our coordinate system up in order to start drawing our second row, we will end up drawing off the screen in a diagonal. It would look like figure 18 (third from left).
+-->
 
+家族をグリッド上に置こうとすると、問題に遭遇します。一行目を描画し終わると、座標系は左に移動しすぎています。2 行目を描画するために座標系を上に移動すると、対角線上の画面外に描画してしまうでしょう。これは図 18（左から 3 番目）のような状態です。
+
+<!--
 So what we need is to reset the coordinate system using [`ofPushMatrix()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofPushMatrix) and [`ofPopMatrix()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofPopMatrix). `ofPushMatrix()` saves the current coordinate system and `ofPopMatrix()` returns us to the last saved coordinate system. These functions have the word matrix in them because openFrameworks stores all of our combined rotations, translations and scalings in a single matrix. So we can use these new functions like this:
+-->
 
+ですので[`ofPushMatrix()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofPushMatrix)と[`ofPopMatrix()`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofPopMatrix)を使って座標系をリセットすることが必要です。`ofPushMatrix()`は現在の座標系を保存して、`ofPopMatrix()`は最後に保存した座標系を返してくれます。これらの関数には matrix という単語が入っていて、なぜならば openFrameworks は回転、移動、拡縮小を全て結合して一つの行列で保持しているからです。これらの新しい関数は以下のように使用できます。
+
+<!--
 ```cpp
     for (int rows=0; rows<10; rows++) {
         ofPushMatrix(); // Save the coordinate system before we shift it horizontally
@@ -1351,23 +1868,68 @@ So what we need is to reset the coordinate system using [`ofPushMatrix()`](http:
         ofTranslate(0, 200);
     }
 ```
+-->
 
+```cpp
+    for (int rows=0; rows<10; rows++) {
+        ofPushMatrix(); // 水平に移動する前に座標系を保存します
+
+        // 可読性のために、行列のpushとpopの間のコードをインデントしておくと良いかもしれません
+
+        // ループして一行描画します（コード省略）
+
+        ofPopMatrix(); // 水平に移動する前の座標系に戻る
+        ofTranslate(0, 200);
+    }
+```
+
+<!--
 And we should end up with a grid. See figure 18, right. (I used `ofScale` to jam many in one image.) Or if you hate grids, we can make a mess of a crowd using random rotations and translations, figure 19.
+-->
 
+最終的にグリッド上になります。図 18 の右側をご覧ください。（`ofScale`を使って大勢を一つの画像に詰め込みました。）グリッドが嫌ならば、ランダムな回転や移動を使って図 19 のようなぐちゃぐちゃの群衆にできます。
+
+<!--
 ![Figure 19: A crowd](images/Figure19_Crowd.png)
+-->
 
+![図 19: 群衆](images/Figure19_Crowd.png)
+
+<!--
 \[[Source code for this section](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/3_i_Translating_Stick_Family)\]
 
 \[[ofSketch file for this section](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/3_i_Translating_Stick_Family.sketch)\]
+-->
 
+\[[このセクションのソースコード](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/3_i_Translating_Stick_Family)\]
+
+\[[このセクションの ofSketch ファイル](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/3_i_Translating_Stick_Family.sketch)\]
+
+<!--
 ### Rotating and Scaling: Spiraling Rectangles
+-->
 
+### 回転と拡縮: 渦巻く四角形
+
+<!--
 Onto `ofScale(...)` and `ofRotate(...)`! Let's create a new project where rotating and scaling rectangles to get something like figure 20.
+-->
 
+`ofScale(...)`と`ofRotate(...)`を続けます！新規プロジェクトを作成して回転と拡縮で図 20 のような形にします。
+
+<!--
 ![Figure 20: Drawing a series of spiraling rectangles](images/Figure20_SpiralingRectangles.png)
+-->
 
+![図 20: 渦巻く一連の四角形の描画](images/Figure20_SpiralingRectangles.png)
+
+<!--
 Before knowing about `ofRotate(...)`, we couldn't have drawn a rotated rectangle with `ofDrawRectangle(...)`. [`ofRotate(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofRotate) takes an angle (in degrees) and rotates our coordinate system around the current origin. Let's attempt a rotated rectangle:
+-->
 
+`ofRotate(...)`について理解せずに`ofDrawRectangle(...)`で回転した四角形を描画することはできません。[`ofRotate(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofRotate)は角度（degree）を受け取って現在の原点を中心に座標系を回転させます。四角形の回転を試してみましょう。
+
+<!--
 ```cpp
 ofBackground(255);
 ofPushMatrix();
@@ -1381,13 +1943,41 @@ ofPushMatrix();
     ofDrawRectangle(500, 200, 200, 200);
 ofPopMatrix();
 ```
+-->
 
+```cpp
+ofBackground(255);
+ofPushMatrix();
+    // 元の四角形を青色にします
+    ofSetColor(0, 0, 255);
+    ofDrawRectangle(500, 200, 200, 200);
+
+    // 回転した四角形は赤色にします
+    ofRotate(45);
+    ofSetColor(255, 0, 0);
+    ofDrawRectangle(500, 200, 200, 200);
+ofPopMatrix();
+```
+
+<!--
 Hmm, not quite right (figure 21, left). `ofRotate(...)` rotates around the current origin, the top left corner of the screen. To rotate in place, we need `ofTranslate(...)` to move the origin to our rectangle _before_ we rotate. Add `ofTranslate(500, 200)` before rotating (figure 21, second from left). Now we are rotating around the upper left corner of the rectangle. The easiest way to rotate the rectangle around its center is to use `ofSetRectMode(OF_RECTMODE_CENTER)` draw the center at (500, 200). Do that, and we finally get figure 21, third from left.
+-->
 
+うーむ、正しくありませんね（図 21、左側）。`ofRotate(...)`は現在の原点を中心に回転しますが、これは画面の左上の角です。その場で回転させるには、`ofTranslate(...)`で四角形を回転する _前に_ 原点を移動させる必要があります。`ofTranslate(500, 200)`を回転の前に追加しましょう（図 21、左から 2 つ目）。今は四角形の左上の角を中心に回転させています。中心を軸に回転させるのに最も簡単なのは、`ofSetRectMode(OF_RECTMODE_CENTER)`を使って(500, 200)に中心を描画します。これをすると、図 21 の左から 3 番目のようになります。
+
+<!--
 ![Figure 21: Steps along the way to rotating and scaling a rectangle in place](images/Figure21_CoordSystemManipulations.png)
+-->
 
+![図 21: 順を追ってその場で四角形を回転および拡縮する](images/Figure21_CoordSystemManipulations.png)
+
+<!--
 Push, translate, rotate, pop - no problem. Only thing left is [`ofScale(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofScale). It takes two arguments: the desired scaling in x and y directions (and an optional z scaling). Applying scaling to our rectangles:
+-->
 
+プッシュ、移動、回転、ポップ。問題ありませんね。残すは[`ofScale(...)`](http://openframeworks.cc/documentation/graphics/ofGraphics.html#show_ofScale)です。これは 2 つの引数、望みの x と y 方向（それと任意の z 方向）の拡縮率を取ります。スケーリングを四角形に適用しましょう。
+
+<!--
 ```cpp
 ofSetRectMode(OF_RECTMODE_CENTER);
 ofBackground(255);
@@ -1404,11 +1994,38 @@ ofPushMatrix();
     ofDrawRectangle(0, 0, 200, 200);
 ofPopMatrix();
 ```
+-->
 
+```cpp
+ofSetRectMode(OF_RECTMODE_CENTER);
+ofBackground(255);
+
+ofPushMatrix();
+    // 元の四角形を青色にします
+    ofSetColor(0, 0, 255);
+    ofDrawRectangle(500, 200, 200, 200);
+
+    // 縮小された四角形を赤色にします
+    ofTranslate(500, 200);
+    ofScale(0.5, 0.5);  // xとyだけを扱っていますので、zはデフォルト（1.0)のままにしておきます
+    ofSetColor(255, 0, 0);
+    ofDrawRectangle(0, 0, 200, 200);
+ofPopMatrix();
+```
+
+<!--
 We'll run into the same issues that we ran into with rotation and centering. The solution is the same - translating before scaling and using `OF_RECTMODE_CENTER`. Example scaling shown in figure 21 (right).
+-->
 
+ここでも回転とセンタリングで遭遇したのと同じ問題が起きます。解決策も同じで、拡縮の前に`OF_RECTMODE_CENTER`を使って移動を行います。縮小の例が図 21（右側）です。
+
+<!--
 Now we can make trippy rectangles. Start a new project. The idea is really simple, we are going to draw a rectangle at the center of the screen, scale, rotate, draw a rectangle, repeat and repeat. Add the following to our `draw()` function:
+-->
 
+これで我々はトリップしたような四角形を作ることができます。新規プロジェクトを開始します。概念は非常にシンプルで、四角形を画面の中央に描画し、スケーリングして、回転、四角形を描画、これを繰り返します。下記を`draw()`関数に追加しましょう。
+
+<!--
 ```cpp
 ofBackground(255);
 
@@ -1424,9 +2041,31 @@ ofPushMatrix();
     }
 ofPopMatrix();
 ```
+-->
 
+```cpp
+ofBackground(255);
+
+ofSetRectMode(OF_RECTMODE_CENTER);
+ofSetColor(0);
+ofNoFill();
+ofPushMatrix();
+    ofTranslate(ofGetWidth()/2, ofGetHeight()/2);  // 画面の中央まで移動する
+    for (int i=0; i<100; i++) {
+        ofScale(1.1, 1.1);
+        ofRotate(5);
+        ofDrawRectangle(0, 0, 50, 50);
+    }
+ofPopMatrix();
+```
+
+<!--
 That's it (figure 20). We can play with the scaling, rotation, size of the rectangle, etc. Three lines of code will add some life to our rectangles and cause them to coil and uncoil over time. Put these in the place of `ofRotate(5)`:
+-->
 
+これがそれです（図 20）。拡縮率、回転、四角形のサイズ等を色々試すことができます。3 行のコードを追加すると四角形に新たな生命を与え、時間の経過と共に渦を巻いたり解いたりするようになります。以下を`ofRotate(5)`の場所に書いてみましょう。
+
+<!--
 ```cpp
 // Noise is a topic that deserves a section in a book unto itself
 // Check out Section 1.6 of "The Nature of Code" for a good explanation
@@ -1436,17 +2075,45 @@ float timeScale = 0.5;
 float noise = ofSignedNoise(time * timeScale) * 20.0;
 ofRotate(noise);
 ```
+-->
 
+```cpp
+// ノイズはそれ自体で一つの章を割くべきトピックです
+// セクション1.6の「プログラムコードの性質（The Nature of Code）」に良い説明があります。
+// http://natureofcode.com/book/introduction/
+float time = ofGetElapsedTimef();
+float timeScale = 0.5;
+float noise = ofSignedNoise(time * timeScale) * 20.0;
+ofRotate(noise);
+```
+
+<!--
 Next, we can create a visual smear ("trail effect") as it rotates if we will turn off the background automatic clearing and partially erase the screen before drawing again. To do this add a few things to `setup()`:
+-->
 
+次に、背景の自動消去を無効化して再描画の前に部分的に消去することで視覚的な染み（トレイル・エフェクト）を回転に合わせて作り出すことができます。これをするには`setup()`に幾つか追加します。
+
+<!--
 ```cpp
 ofSetBackgroundAuto(false);
 ofEnableAlphaBlending(); // Remember if we are using transparency, we need to let openFrameworks know
 ofBackground(255);
 ```
+-->
 
+```cpp
+ofSetBackgroundAuto(false);
+ofEnableAlphaBlending(); // 透明度を使う場合は、openFrameworksに知らせる必要があります。
+ofBackground(255);
+```
+
+<!--
 Delete `ofBackground(255)` from our `draw()` function. Then, add this to the beginning of our `draw()` function:
+-->
 
+`ofBackground(255)`を`draw()`関数から削除します。それから、これを`draw()`関数の最初に追加します。
+
+<!--
 ```cpp
 float clearAlpha = 100;
 ofSetColor(255, clearAlpha);
@@ -1454,22 +2121,57 @@ ofSetRectMode(OF_RECTMODE_CORNER);
 ofFill();
 ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());  // ofBackground doesn't work with alpha, so draw a transparent rect
 ```
+-->
 
+```cpp
+float clearAlpha = 100;
+ofSetColor(255, clearAlpha);
+ofSetRectMode(OF_RECTMODE_CORNER);
+ofFill();
+ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());  // ofBackground はアルファ値を扱えないので、透明の四角形を描画します。
+```
+
+<!--
 Pretty hypnotizing? If we turn up the `clearAlpha`, we will turn down the smear. If we turn down the `clearAlpha`, we will turn up the smear.
+-->
 
+とても魅力的でしょう？`clearAlpha`の値を上げると、不鮮明さを減らすことができます。`clearAlpha`の値を下げると、不鮮明さは大きくなります。
+
+<!--
 Now we've got two parameters that drastically change the visual experience of our spirals, specifically: `timeScale` of noise and `clearAlpha` of the trail effect. Instead of manually tweaking their values in the code, we can use the mouse position to independently control the values during run time. Horizontal position can adjust the `clearAlpha` while vertical position can adjust the `timeScale`. This type of exploration of parameter settings is super important (especially when making generative graphics), and using the mouse is handy if we've got one or two parameters to explore.
+-->
 
+これで我々は、螺旋の視覚体験をドラスティックに変化させる具体的なパラメータ、ノイズの`timeScale`とトレイル・エフェクトの`clearAlpha`を手に入れました。手動でこれらの値をコードでいじるのではなく、それぞれ実行時にマウスの位置で制御することができます。水平位置で`clearAlpha`、垂直位置で`timeScale`を調整できます。このタイプのパラメタの調整は（特にジェネラティブ・グラフィックスの作成時には）非常に重要で、マウス位置の利用は調整したいパラメタが一つか二つの時には便利です。
+
+<!--
 [`mouseMoved(int x, int y )`](http://openframeworks.cc/documentation/application/ofBaseApp.html#!show_mouseMoved) runs anytime the mouse moves (in our app). We can use this function to change our parameters. Like with `mousePressed(...)`, if you are using project generator, you'll find this with your mouse functions in your `.cpp` file. If you are using ofSketch, you might not see this function, but it's easy to add. See the [ofSketch file](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/3_ii_Rotating_and_Scaling.sketch) for this section.
+-->
 
+[`mouseMoved(int x, int y )`](http://openframeworks.cc/documentation/application/ofBaseApp.html#!show_mouseMoved)は（アプリ中で）マウスが移動した際に常に実行されます。この関数をパラメータを変化させるのに利用できます。`mousePressed(...)`と同様に、project generator を使っているならば`.cpp`ファイルのマウス関数の中に見つかるでしょう。ofSketch を利用しているならばこの関数はないでしょうが、簡単に追加できます。このセクションの[ofSketch file](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/3_ii_Rotating_and_Scaling.sketch)をご覧ください。
+
+<!--
 Before we use this function, we need to make our parameters global in their scope. Delete the code that defines `timeScale` and `clearAlpha` locally in `draw()` and add them to the header. Initialize the values in `setup()` to `100` and `0.5` respectively. Then add these to `mouseMoved(...)`:
+-->
 
+<!--
 ```cpp
 clearAlpha = ofMap(x, 0, ofGetWidth(), 0, 255);  // clearAlpha goes from 0 to 255 as the mouse moves from left to right
 timeScale = ofMap(y, 0, ofGetHeight(), 0, 1);  // timeScale goes from 0 to 1 as the mouse moves from top to bottom
 ```
+-->
 
+```cpp
+clearAlpha = ofMap(x, 0, ofGetWidth(), 0, 255);  // clearAlpha はマウスが左から右に動くのに合わせて 0 から 255 まで変化します
+timeScale = ofMap(y, 0, ofGetHeight(), 0, 1);  // timeScale はマウスが上から下に動くのに合わせて 0 から 1 まで変化します
+```
+
+<!--
 One last extension. We can slowly flip the background and rectangle colors, by adding this to the top of `draw()`:
+-->
 
+最後の拡張です。`draw()`の最初に以下を追加することで背景と四角形の色をゆっくりと反転させることができます。
+
+<!--
 ```cpp
 ofColor darkColor(0,0,0,255);  // Opaque black
 ofColor lightColor(255,255,255,255);  // Opaque white
@@ -1481,22 +2183,70 @@ bgColor.a = clearAlpha;  // Our initial colors were opaque, but our rectangle ne
 ofColor fgColor = lightColor;  // Color for the rectangle outlines
 fgColor.lerp(darkColor, percent);  // Modifies color in place
 ```
+-->
 
+```cpp
+ofColor darkColor(0,0,0,255);  // 不透明の黒
+ofColor lightColor(255,255,255,255);  // 不透明の白
+float time = ofGetElapsedTimef();  // 時間を秒で
+float percent = ofMap(cos(time/2.0), -1, 1, 0, 1);  // 0から1の間で変動する値を作る
+ofColor bgColor = darkColor;  // 画面を消去するための透明な四角形用の色
+bgColor.lerp(lightColor, percent);  // これは色を「その場で」変更します。ドキュメントページを参照
+bgColor.a = clearAlpha;  // 初期の色は不透明ですが、四角形の色は透過な必要があります
+ofColor fgColor = lightColor;  // 四角形の輪郭用の色
+fgColor.lerp(darkColor, percent);  // その場で色を変更する
+```
+
+<!--
 Now use `bgColor` for the transparent rectangle we draw on the screen and `fgColor` for the rectangle outlines to get figure 22.
+-->
 
+`bgColor`を透過な四角形を画面に描画するために使い、`fgColor`を四角形の輪郭の描画に使うと、図 22 が得られます。
+
+<!--
 ![Figure 22: A single frame from animated spiraling rectangles where the contrast reverses over time](images/Figure22_ContrastReversingSpiral.png)
+-->
 
+![図 22: 時間経過につれてコントラストが反転する、螺旋状のアニメーションをする四角形の1フレーム](images/Figure22_ContrastReversingSpiral.png)
+
+<!--
 \[[Source code for this section](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/3_ii_Rotating_and_Scaling)\]
 
 \[[ofSketch file for this section](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/3_ii_Rotating_and_Scaling.sketch)\]
+-->
 
+\[[このセクションのソースコード](https://github.com/openframeworks/ofBook/tree/master/chapters/intro_to_graphics/code/3_ii_Rotating_and_Scaling)\]
+
+\[[このセクションの ofSketch ファイル](https://github.com/openframeworks/ofBook/blob/master/chapters/intro_to_graphics/code/3_ii_Rotating_and_Scaling.sketch)\]
+
+<!--
 **Extensions**
+-->
 
+**発展**
+
+<!--
 1. Pass in a third parameter, `z`, into `ofTranslate(...)` and `ofScale(...)` or rotate around the x and y axes with `ofRotate(...)`.
 2. Capture animated works using an addon called [ofxVideoRecorder](https://github.com/timscaffidi/ofxVideoRecorder). If you are using Windows, like me, that won't work for you, so try screen capture software (like fraps) or saving out a series of images using `ofSaveScreen(...)` and using them to create a GIF or movie with your preferred tools (Photoshop, [ffmpeg](https://ffmpeg.org/), [ImageMagick](http://imagemagick.org/) etc.)
+-->
 
+1. `ofTranslate(...)`と`ofScale(...)`の 3 番目のパラメータの`z`を渡すか`ofRotate(...)`で x および y 軸を中心に回転させてみましょう。
+2. [ofxVideoRecorder](https://github.com/timscaffidi/ofxVideoRecorder)というアドオンでアニメーション作品をキャプチャしてみましょう。私のように Windows を利用しているならばこれは機能しないでしょうから、画面キャプチャソフト（fraps のような）を試すか、`ofSaveScreen(....)`で一連の画像を保存して、任意のツール（Photoshop、[ffmpeg](https://ffmpeg.org/)、[ImageMagick](http://imagemagick.org/)等）で GIF や動画を作成してみましょう。
+
+<!--
 ## Next Steps
+-->
 
+## 次のステップ
+
+<!--
 Congratulations on surviving the chapter :). You covered a lot of ground and (hopefully) made some fun things along the way - which you should share on the [forums](http://forum.openframeworks.cc/)!
+-->
 
+このチャプターの最後まで到達されて、おめでとうございます:)。多くの基礎をカバーでき、（望むらくは）過程において[フォーラム](http://forum.openframeworks.cc/)に投稿できるような楽しい作品を多く作成したでしょう。
+
+<!--
 If you are looking to learn more about graphics in openFrameworks, definitely continue on to _Advanced Graphics_ chapter to dive into more advanced graphical features. You can also check out these three tutorials: [Basics of Generating Meshes from an Image](http://openframeworks.cc/tutorials/graphics/generativemesh.html), for a gentle introduction to meshes; [Basics of OpenGL](http://openframeworks.cc/tutorials/graphics/opengl.html), for a comprehensive look at graphics that helps explain what is happening under the hood of openFrameworks; and [Introducing Shaders](http://openframeworks.cc/tutorials/graphics/shaders.html), for a great way to start programming with your graphical processing unit (GPU).
+-->
+
+もしあなた openFrameworks でのグラフィックスについてより学びたいと考えたなら、ぜひ続けて _Advanced Graphics_ の章へ行き、より先進的なグラフィックス機能に取り組んでください。下記の 3 つのチュートリアルをチェックしても良いでしょう。メッシュの親切な導入には[Basics of Generating Meshes from an Image](http://openframeworks.cc/tutorials/graphics/generativemesh.html)、openFrameworks の背後で何が行われているかを説明するためにグラフィックスについて包括的な見方については[Basics of OpenGL](http://openframeworks.cc/tutorials/graphics/opengl.html)、GPU プログラミングを開始する素晴らしい方法として[Introducing Shaders](http://openframeworks.cc/tutorials/graphics/shaders.html)。
